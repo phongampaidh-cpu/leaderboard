@@ -39,6 +39,23 @@ const App = () => {
     localStorage.setItem('bmpn_teams', JSON.stringify(teams));
   }, [teams]);
 
+  // ซิงค์ข้อมูลข้ามหน้าต่าง (สำหรับกรณีเปิดโหมด Admin จอโน้ตบุ๊ก และเปิด Leaderboard จอโปรเจกเตอร์)
+  useEffect(() => {
+    const syncAcrossWindows = (e) => {
+      // ถ้ามีการเปลี่ยนคะแนนจากหน้าต่างอื่น ให้ดึงข้อมูลใหม่มาแสดงทันที
+      if (e.key === 'bmpn_teams' && e.newValue) {
+        setTeams(JSON.parse(e.newValue));
+      }
+      // ถ้ามีการกดสลับโหมดมืด/สว่าง จากหน้าต่างอื่น ให้เปลี่ยนตามด้วย
+      if (e.key === 'bmpn_theme') {
+        setDarkMode(e.newValue === 'dark');
+      }
+    };
+
+    window.addEventListener('storage', syncAcrossWindows);
+    return () => window.removeEventListener('storage', syncAcrossWindows);
+  }, []);
+
   // จัดการ Dark Mode
   useEffect(() => {
     if (darkMode) {
@@ -184,40 +201,44 @@ const App = () => {
                 </div>
               ) : (
                 sortedTeams.map((team, index) => {
-                  // กำหนดสไตล์สำหรับ 3 อันดับแรก
+                  // กำหนดสไตล์เริ่มต้นเป็นแบบธรรมดา
                   let rankStyle = "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400";
                   let icon = null;
                   
-                  if (index === 0) {
-                    rankStyle = "bg-gradient-to-r from-yellow-100 to-amber-50 dark:from-yellow-900/40 dark:to-amber-900/20 border-yellow-300 shadow-lg shadow-yellow-500/20 scale-[1.02] z-30";
-                    icon = <Trophy className="w-8 h-8 text-yellow-500" />;
-                  } else if (index === 1) {
-                    // อัปเดตสีเงินให้โดดเด่น เปล่งประกาย และมีมิติมากกว่าทองแดง
-                    rankStyle = "bg-gradient-to-r from-slate-200 to-gray-100 dark:from-slate-700 dark:to-gray-800 border-slate-400 shadow-lg shadow-slate-500/30 scale-[1.01] z-20";
-                    icon = <Medal className="w-8 h-8 text-slate-600 dark:text-slate-300 drop-shadow-sm" />;
-                  } else if (index === 2) {
-                    rankStyle = "bg-gradient-to-r from-orange-100 to-amber-50 dark:from-amber-900/30 dark:to-orange-900/20 border-amber-300 shadow-md z-10";
-                    icon = <Medal className="w-8 h-8 text-amber-600" />;
+                  // จะเน้นสีสันและมอบไอคอนอันดับ ก็ต่อเมื่อทีมนั้นมีคะแนนมากกว่า 0 แล้วเท่านั้น
+                  if (team.score > 0) {
+                    if (index === 0) {
+                      rankStyle = "bg-gradient-to-r from-yellow-100 to-amber-50 dark:from-yellow-900/40 dark:to-amber-900/20 border-yellow-300 shadow-lg shadow-yellow-500/20 scale-[1.02] z-30";
+                      icon = <Trophy className="w-8 h-8 text-yellow-500" />;
+                    } else if (index === 1) {
+                      rankStyle = "bg-gradient-to-r from-slate-200 to-gray-100 dark:from-slate-700 dark:to-gray-800 border-slate-400 shadow-lg shadow-slate-500/30 scale-[1.01] z-20";
+                      icon = <Medal className="w-8 h-8 text-slate-600 dark:text-slate-300 drop-shadow-sm" />;
+                    } else if (index === 2) {
+                      rankStyle = "bg-gradient-to-r from-orange-100 to-amber-50 dark:from-amber-900/30 dark:to-orange-900/20 border-amber-300 shadow-md z-10";
+                      icon = <Medal className="w-8 h-8 text-amber-600" />;
+                    }
                   }
+
+                  // ถ้าคะแนนเป็น 0 ให้แสดงเครื่องหมาย - แทนตัวเลข เพื่อแสดงว่าเพิ่งเริ่มต้นและยังไม่จัดอันดับ
+                  const rankDisplay = team.score === 0 ? "-" : `#${index + 1}`;
 
                   return (
                     <div 
                       key={team.id} 
                       className={`relative flex items-center justify-between p-4 md:p-6 rounded-2xl border transition-all duration-500 transform ${rankStyle}`}
                       style={{
-                         // ใช้ relative positioning สำหรับ FLIP-like effect เบื้องต้นที่ CSS จัดการให้
                          order: index
                       }}
                     >
                       <div className="flex items-center gap-4 md:gap-6">
                         {/* เลขอันดับ / ไอคอน */}
                         <div className="flex items-center justify-center w-12 h-12 md:w-16 md:h-16 rounded-full glass-panel font-bold text-xl md:text-2xl shadow-inner">
-                          {icon ? icon : `#${index + 1}`}
+                          {icon ? icon : rankDisplay}
                         </div>
                         
                         {/* ชื่อทีม */}
                         <div>
-                          <h3 className={`text-lg md:text-2xl font-bold ${index < 3 ? 'text-slate-800 dark:text-white' : ''}`}>
+                          <h3 className={`text-lg md:text-2xl font-bold ${(index < 3 && team.score > 0) ? 'text-slate-800 dark:text-white' : ''}`}>
                             {team.name}
                           </h3>
                         </div>
@@ -226,6 +247,7 @@ const App = () => {
                       {/* คะแนน */}
                       <div className="text-right">
                         <div className={`text-3xl md:text-5xl font-black tabular-nums tracking-tighter ${
+                          team.score === 0 ? 'text-slate-400 dark:text-slate-500' :
                           index === 0 ? 'text-yellow-600 dark:text-yellow-400' : 
                           index === 1 ? 'text-slate-700 dark:text-slate-200' : 
                           index === 2 ? 'text-amber-700 dark:text-amber-500' : 
