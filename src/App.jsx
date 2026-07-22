@@ -5,14 +5,12 @@ import {
 } from 'lucide-react';
 
 const App = () => {
-  /* STREAMING_CHUNK:Initializing state variables... */
   // === State Management ===
   const [teams, setTeams] = useState(() => {
     const saved = localStorage.getItem('bmpn_teams');
     if (saved) {
       return JSON.parse(saved);
     }
-    // ข้อมูลเริ่มต้นสำหรับทดสอบ
     return [
       { id: '1', name: 'ประวัติศาสตร์ยุคต้น', score: 0 },
       { id: '2', name: 'สยามประเทศ', score: 0 },
@@ -43,9 +41,7 @@ const App = () => {
     return localStorage.getItem('bmpn_celebrate') === 'true';
   });
 
-  /* STREAMING_CHUNK:Setting up effects and external scripts... */
   // === Effects ===
-  // นำเข้าไลบรารีพลุ (Confetti)
   useEffect(() => {
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js';
@@ -54,7 +50,6 @@ const App = () => {
     return () => document.body.removeChild(script);
   }, []);
 
-  // จัดการการแสดงผลพลุฉลอง
   useEffect(() => {
     let interval;
     if (isCelebrating) {
@@ -83,12 +78,10 @@ const App = () => {
     return () => clearInterval(interval);
   }, [isCelebrating]);
 
-  // บันทึกข้อมูลทีมลง localStorage
   useEffect(() => {
     localStorage.setItem('bmpn_teams', JSON.stringify(teams));
   }, [teams]);
 
-  // ซิงค์ข้อมูลข้ามหน้าต่าง (Real-time updates)
   useEffect(() => {
     const syncAcrossWindows = (e) => {
       if (e.key === 'bmpn_teams' && e.newValue) {
@@ -106,7 +99,6 @@ const App = () => {
     return () => window.removeEventListener('storage', syncAcrossWindows);
   }, []);
 
-  // จัดการโหมดมืด/สว่าง
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add('dark');
@@ -117,9 +109,7 @@ const App = () => {
     }
   }, [darkMode]);
 
-  /* STREAMING_CHUNK:Defining helper functions... */
   // === Helper Functions ===
-  // จัดเรียงทีมตามคะแนน (มากไปน้อย) และถ้าคะแนนเท่ากัน เรียงตามตัวอักษร ก-ฮ
   const sortedTeams = [...teams].sort((a, b) => {
     if (b.score === a.score) {
       return a.name.localeCompare(b.name, 'th');
@@ -174,7 +164,6 @@ const App = () => {
     setShowResetModal(false);
   };
 
-  /* STREAMING_CHUNK:Styling the application... */
   // === สไตล์ CSS เพิ่มเติม ===
   const customStyles = `
     .flip-list-move {
@@ -199,7 +188,6 @@ const App = () => {
     }
   `;
 
-  /* STREAMING_CHUNK:Rendering the main layout... */
   return (
     <div className={`min-h-screen transition-colors duration-300 font-sans ${darkMode ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-800'}`}>
       <style>{customStyles}</style>
@@ -239,18 +227,15 @@ const App = () => {
       {/* --- Main Content Area --- */}
       <main className="container mx-auto px-4 py-8 max-w-6xl">
         
-        {/* STREAMING_CHUNK:Rendering Public Leaderboard View... */}
-        {/* =========================================================================
-            VIEW 1: PUBLIC LEADERBOARD (เมื่อไม่ได้อยู่ในโหมด Admin)
-            ========================================================================= */}
+        {}
         {!isAdmin && (
           <div className="space-y-4 sm:space-y-6">
-            {/* ปรับระยะห่างตรงนี้ */}
-            <div className="text-center mb-10 sm:mb-16">
-              <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2 sm:mb-4">
+            {/* เพิ่มระยะห่างตรงนี้ให้เยอะมากๆ (mb-16 ถึง mb-32) */}
+            <div className="text-center mb-16 sm:mb-24 lg:mb-32">
+              <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-3 sm:mb-5">
                 กระดานจัดอันดับคะแนน
               </h2>
-              <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
+              <p className="text-base sm:text-lg md:text-xl text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
                 อัปเดตสถานการณ์แบบเรียลไทม์ ร่วมลุ้นและเป็นกำลังใจให้ทุกทีม
               </p>
             </div>
@@ -267,7 +252,6 @@ const App = () => {
               // ประมวลผลอันดับ (ถ้าคะแนนเท่ากัน ให้อันดับเดียวกัน)
               const teamsWithRank = sortedTeams.map((team, index, arr) => {
                 if (team.score === 0) return { ...team, displayRank: '-' };
-                // หาระยะที่ทีมนี้ไปชนกับคะแนนแรกสุดที่เจอ
                 const actualRank = arr.findIndex(t => t.score === team.score) + 1;
                 return { ...team, displayRank: actualRank };
               });
@@ -283,11 +267,12 @@ const App = () => {
               const bottomTeams = [...rankedTeams.slice(3), ...unrankedTeams];
 
               return (
-                <div className="flex flex-col gap-6 sm:gap-10 w-full">
+                <div className="flex flex-col gap-8 sm:gap-16 w-full">
                   
                   {/* --- แท่นรางวัล (Podium) สำหรับ Top 3 --- */}
+                  {/* เพิ่ม mt-8 sm:mt-12 ให้ห่างจากด้านบนมากขึ้นอีก */}
                   {rank1 && (
-                    <div className="flex flex-row justify-center items-end gap-2 sm:gap-6 mt-6 sm:mt-8 mb-6 h-[280px] sm:h-[350px] px-2 w-full max-w-4xl mx-auto">
+                    <div className="flex flex-row justify-center items-end gap-2 sm:gap-6 mt-8 sm:mt-12 mb-6 sm:mb-10 h-[280px] sm:h-[350px] px-2 w-full max-w-4xl mx-auto">
                       
                       {/* แท่นอันดับ 2 (ซ้าย) */}
                       {rank2 ? (
@@ -333,35 +318,36 @@ const App = () => {
                     </div>
                   )}
 
-                  {/* --- ตารางรายชื่อทีมที่เหลือแบบคอลัมน์ (Grid) ขยายขนาดการ์ด --- */}
+                  {/* --- ตารางรายชื่อทีมที่เหลือแบบคอลัมน์ (Grid) ขยายขนาดการ์ดแบบจัดเต็ม --- */}
+                  {/* ลดจำนวนคอลัมน์เหลือ 4 และเพิ่มระยะห่าง (gap) */}
                   {bottomTeams.length > 0 && (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-5 mt-4 sm:mt-6 w-full px-2 max-w-full">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 md:gap-8 mt-6 sm:mt-10 w-full px-2 max-w-full">
                       {bottomTeams.map((team) => {
                         const isRanked = team.score > 0;
                         return (
                           <div 
                             key={team.id} 
-                            className={`flex items-center justify-between p-3 sm:p-5 rounded-2xl border transition-all duration-300 hover:shadow-md hover:-translate-y-1 ${
+                            className={`flex items-center justify-between p-4 sm:p-6 md:p-8 rounded-3xl border-2 transition-all duration-300 hover:shadow-xl hover:-translate-y-2 ${
                               isRanked 
                                 ? 'glass-panel border-blue-200 dark:border-blue-900/50 hover:border-blue-400' 
                                 : 'bg-white/40 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700 grayscale-[40%]'
                             }`}
                           >
-                            <div className="flex items-center gap-3 sm:gap-4 overflow-hidden">
-                              <div className={`w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 rounded-full flex items-center justify-center font-bold text-sm sm:text-base shadow-inner ${
+                            <div className="flex items-center gap-4 sm:gap-5 overflow-hidden">
+                              <div className={`w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 flex-shrink-0 rounded-full flex items-center justify-center font-bold text-base sm:text-lg md:text-xl shadow-inner ${
                                 isRanked 
                                   ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300' 
                                   : 'bg-slate-100 dark:bg-slate-800 text-slate-400'
                               }`}>
                                 {team.displayRank}
                               </div>
-                              <h4 className={`font-bold text-sm sm:text-base md:text-lg truncate ${
+                              <h4 className={`font-bold text-base sm:text-xl md:text-2xl truncate ${
                                 isRanked ? 'text-slate-800 dark:text-white' : 'text-slate-500 dark:text-slate-400'
                               }`}>
                                 {team.name}
                               </h4>
                             </div>
-                            <div className={`text-xl sm:text-2xl md:text-3xl font-black tabular-nums tracking-tighter ml-3 flex-shrink-0 ${
+                            <div className={`text-3xl sm:text-4xl md:text-5xl font-black tabular-nums tracking-tighter ml-4 flex-shrink-0 ${
                               isRanked ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500'
                             }`}>
                               {isRanked ? team.score.toLocaleString() : '-'}
@@ -378,12 +364,9 @@ const App = () => {
           </div>
         )}
 
-        {/* STREAMING_CHUNK:Rendering Admin Control Panel... */}
-        {/* =========================================================================
-            VIEW 2: ADMIN CONTROL PANEL
-            ========================================================================= */}
+        {}
         {isAdmin && (
-          <div className="space-y-8 animate-fade-in-up">
+          <div className="space-y-8 animate-fade-in">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
               <div>
                 <h2 className="text-2xl font-bold flex items-center gap-2">
@@ -534,10 +517,7 @@ const App = () => {
         )}
       </main>
 
-      {/* STREAMING_CHUNK:Rendering Modals and Overlays... */}
-      {/* =========================================================================
-          MODALS & OVERLAYS
-          ========================================================================= */}
+      {}
       {showResetModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-fade-in-up">
