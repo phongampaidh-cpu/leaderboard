@@ -5,12 +5,14 @@ import {
 } from 'lucide-react';
 
 const App = () => {
+  /* STREAMING_CHUNK:Initializing state variables... */
   // === State Management ===
   const [teams, setTeams] = useState(() => {
     const saved = localStorage.getItem('bmpn_teams');
     if (saved) {
       return JSON.parse(saved);
     }
+    // ข้อมูลเริ่มต้นสำหรับทดสอบ
     return [
       { id: '1', name: 'ประวัติศาสตร์ยุคต้น', score: 0 },
       { id: '2', name: 'สยามประเทศ', score: 0 },
@@ -41,7 +43,9 @@ const App = () => {
     return localStorage.getItem('bmpn_celebrate') === 'true';
   });
 
+  /* STREAMING_CHUNK:Setting up effects and external scripts... */
   // === Effects ===
+  // นำเข้าไลบรารีพลุ (Confetti)
   useEffect(() => {
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js';
@@ -50,6 +54,7 @@ const App = () => {
     return () => document.body.removeChild(script);
   }, []);
 
+  // จัดการการแสดงผลพลุฉลอง
   useEffect(() => {
     let interval;
     if (isCelebrating) {
@@ -78,10 +83,12 @@ const App = () => {
     return () => clearInterval(interval);
   }, [isCelebrating]);
 
+  // บันทึกข้อมูลทีมลง localStorage
   useEffect(() => {
     localStorage.setItem('bmpn_teams', JSON.stringify(teams));
   }, [teams]);
 
+  // ซิงค์ข้อมูลข้ามหน้าต่าง (Real-time updates)
   useEffect(() => {
     const syncAcrossWindows = (e) => {
       if (e.key === 'bmpn_teams' && e.newValue) {
@@ -99,6 +106,7 @@ const App = () => {
     return () => window.removeEventListener('storage', syncAcrossWindows);
   }, []);
 
+  // จัดการโหมดมืด/สว่าง
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add('dark');
@@ -109,7 +117,9 @@ const App = () => {
     }
   }, [darkMode]);
 
+  /* STREAMING_CHUNK:Defining helper functions... */
   // === Helper Functions ===
+  // จัดเรียงทีมตามคะแนน (มากไปน้อย) และถ้าคะแนนเท่ากัน เรียงตามตัวอักษร ก-ฮ
   const sortedTeams = [...teams].sort((a, b) => {
     if (b.score === a.score) {
       return a.name.localeCompare(b.name, 'th');
@@ -164,6 +174,7 @@ const App = () => {
     setShowResetModal(false);
   };
 
+  /* STREAMING_CHUNK:Styling the application... */
   // === สไตล์ CSS เพิ่มเติม ===
   const customStyles = `
     .flip-list-move {
@@ -188,6 +199,7 @@ const App = () => {
     }
   `;
 
+  /* STREAMING_CHUNK:Rendering the main layout... */
   return (
     <div className={`min-h-screen transition-colors duration-300 font-sans ${darkMode ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-800'}`}>
       <style>{customStyles}</style>
@@ -227,13 +239,15 @@ const App = () => {
       {/* --- Main Content Area --- */}
       <main className="container mx-auto px-4 py-8 max-w-6xl">
         
+        {/* STREAMING_CHUNK:Rendering Public Leaderboard View... */}
         {/* =========================================================================
             VIEW 1: PUBLIC LEADERBOARD (เมื่อไม่ได้อยู่ในโหมด Admin)
             ========================================================================= */}
         {!isAdmin && (
           <div className="space-y-4 sm:space-y-6">
-            <div className="text-center mb-4 sm:mb-8">
-              <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">
+            {/* ปรับระยะห่างตรงนี้ */}
+            <div className="text-center mb-10 sm:mb-16">
+              <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2 sm:mb-4">
                 กระดานจัดอันดับคะแนน
               </h2>
               <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
@@ -253,6 +267,7 @@ const App = () => {
               // ประมวลผลอันดับ (ถ้าคะแนนเท่ากัน ให้อันดับเดียวกัน)
               const teamsWithRank = sortedTeams.map((team, index, arr) => {
                 if (team.score === 0) return { ...team, displayRank: '-' };
+                // หาระยะที่ทีมนี้ไปชนกับคะแนนแรกสุดที่เจอ
                 const actualRank = arr.findIndex(t => t.score === team.score) + 1;
                 return { ...team, displayRank: actualRank };
               });
@@ -268,11 +283,11 @@ const App = () => {
               const bottomTeams = [...rankedTeams.slice(3), ...unrankedTeams];
 
               return (
-                <div className="flex flex-col gap-4 sm:gap-6 w-full">
+                <div className="flex flex-col gap-6 sm:gap-10 w-full">
                   
                   {/* --- แท่นรางวัล (Podium) สำหรับ Top 3 --- */}
                   {rank1 && (
-                    <div className="flex flex-row justify-center items-end gap-2 sm:gap-6 mt-2 sm:mt-4 mb-2 h-[280px] sm:h-[350px] px-2 w-full max-w-4xl mx-auto">
+                    <div className="flex flex-row justify-center items-end gap-2 sm:gap-6 mt-6 sm:mt-8 mb-6 h-[280px] sm:h-[350px] px-2 w-full max-w-4xl mx-auto">
                       
                       {/* แท่นอันดับ 2 (ซ้าย) */}
                       {rank2 ? (
@@ -318,35 +333,35 @@ const App = () => {
                     </div>
                   )}
 
-                  {/* --- ตารางรายชื่อทีมที่เหลือแบบคอลัมน์ (Grid) --- */}
+                  {/* --- ตารางรายชื่อทีมที่เหลือแบบคอลัมน์ (Grid) ขยายขนาดการ์ด --- */}
                   {bottomTeams.length > 0 && (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3 mt-2 w-full px-2 max-w-full">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-5 mt-4 sm:mt-6 w-full px-2 max-w-full">
                       {bottomTeams.map((team) => {
                         const isRanked = team.score > 0;
                         return (
                           <div 
                             key={team.id} 
-                            className={`flex items-center justify-between p-2 sm:p-3 rounded-xl border transition-all duration-300 hover:shadow-md ${
+                            className={`flex items-center justify-between p-3 sm:p-5 rounded-2xl border transition-all duration-300 hover:shadow-md hover:-translate-y-1 ${
                               isRanked 
                                 ? 'glass-panel border-blue-200 dark:border-blue-900/50 hover:border-blue-400' 
                                 : 'bg-white/40 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700 grayscale-[40%]'
                             }`}
                           >
-                            <div className="flex items-center gap-2 sm:gap-3 overflow-hidden">
-                              <div className={`w-8 h-8 sm:w-9 sm:h-9 flex-shrink-0 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm shadow-inner ${
+                            <div className="flex items-center gap-3 sm:gap-4 overflow-hidden">
+                              <div className={`w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 rounded-full flex items-center justify-center font-bold text-sm sm:text-base shadow-inner ${
                                 isRanked 
                                   ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300' 
                                   : 'bg-slate-100 dark:bg-slate-800 text-slate-400'
                               }`}>
                                 {team.displayRank}
                               </div>
-                              <h4 className={`font-bold text-xs sm:text-sm truncate ${
+                              <h4 className={`font-bold text-sm sm:text-base md:text-lg truncate ${
                                 isRanked ? 'text-slate-800 dark:text-white' : 'text-slate-500 dark:text-slate-400'
                               }`}>
                                 {team.name}
                               </h4>
                             </div>
-                            <div className={`text-lg sm:text-xl font-black tabular-nums tracking-tighter ml-2 flex-shrink-0 ${
+                            <div className={`text-xl sm:text-2xl md:text-3xl font-black tabular-nums tracking-tighter ml-3 flex-shrink-0 ${
                               isRanked ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500'
                             }`}>
                               {isRanked ? team.score.toLocaleString() : '-'}
@@ -363,11 +378,12 @@ const App = () => {
           </div>
         )}
 
+        {/* STREAMING_CHUNK:Rendering Admin Control Panel... */}
         {/* =========================================================================
             VIEW 2: ADMIN CONTROL PANEL
             ========================================================================= */}
         {isAdmin && (
-          <div className="space-y-8 animate-fade-in">
+          <div className="space-y-8 animate-fade-in-up">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
               <div>
                 <h2 className="text-2xl font-bold flex items-center gap-2">
@@ -518,6 +534,7 @@ const App = () => {
         )}
       </main>
 
+      {/* STREAMING_CHUNK:Rendering Modals and Overlays... */}
       {/* =========================================================================
           MODALS & OVERLAYS
           ========================================================================= */}
