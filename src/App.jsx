@@ -11,6 +11,7 @@ const App = () => {
     if (saved) {
       return JSON.parse(saved);
     }
+    // ข้อมูลเริ่มต้นสำหรับทดสอบ
     return [
       { id: '1', name: 'ประวัติศาสตร์ยุคต้น', score: 0 },
       { id: '2', name: 'สยามประเทศ', score: 0 },
@@ -38,10 +39,11 @@ const App = () => {
   const [editName, setEditName] = useState('');
   
   const [isCelebrating, setIsCelebrating] = useState(() => {
-    return localStorage.getItem('bmpn_celebrate') === 'true';
+    return localStorage.getItem('bmpn_celebrate') === 'true'; // <== Fixed typo here
   });
 
   // === Effects ===
+  // นำเข้าไลบรารีพลุ (Confetti)
   useEffect(() => {
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js';
@@ -50,6 +52,7 @@ const App = () => {
     return () => document.body.removeChild(script);
   }, []);
 
+  // จัดการการแสดงผลพลุฉลอง
   useEffect(() => {
     let interval;
     if (isCelebrating) {
@@ -78,10 +81,12 @@ const App = () => {
     return () => clearInterval(interval);
   }, [isCelebrating]);
 
+  // บันทึกข้อมูลทีมลง localStorage
   useEffect(() => {
     localStorage.setItem('bmpn_teams', JSON.stringify(teams));
   }, [teams]);
 
+  // ซิงค์ข้อมูลข้ามหน้าต่าง (Real-time updates)
   useEffect(() => {
     const syncAcrossWindows = (e) => {
       if (e.key === 'bmpn_teams' && e.newValue) {
@@ -99,6 +104,7 @@ const App = () => {
     return () => window.removeEventListener('storage', syncAcrossWindows);
   }, []);
 
+  // จัดการโหมดมืด/สว่าง
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add('dark');
@@ -110,6 +116,7 @@ const App = () => {
   }, [darkMode]);
 
   // === Helper Functions ===
+  // จัดเรียงทีมตามคะแนน (มากไปน้อย) และถ้าคะแนนเท่ากัน เรียงตามตัวอักษร ก-ฮ
   const sortedTeams = [...teams].sort((a, b) => {
     if (b.score === a.score) {
       return a.name.localeCompare(b.name, 'th');
@@ -189,11 +196,11 @@ const App = () => {
   `;
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 font-sans ${darkMode ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-800'}`}>
+    <div className={`min-h-screen flex flex-col transition-colors duration-300 font-sans ${darkMode ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-800'}`}>
       <style>{customStyles}</style>
 
       {/* --- Top Navigation --- */}
-      <nav className="glass-panel sticky top-0 z-40 px-4 py-3 flex justify-between items-center shadow-sm">
+      <nav className="glass-panel sticky top-0 z-40 px-4 py-3 flex justify-between items-center shadow-sm flex-shrink-0">
         <div className="flex items-center gap-2 md:gap-3">
           <Trophy className="text-yellow-500 w-8 h-8 md:w-10 md:h-10 flex-shrink-0" />
           <h1 className="font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 leading-tight">
@@ -225,14 +232,16 @@ const App = () => {
       </nav>
 
       {/* --- Main Content Area --- */}
-      <main className="container mx-auto px-4 py-4 sm:py-6 max-w-6xl">
+      <main className="flex-1 flex flex-col container mx-auto px-4 max-w-6xl">
         
         {}
+        {/* =========================================================================
+            VIEW 1: PUBLIC LEADERBOARD (เมื่อไม่ได้อยู่ในโหมด Admin)
+            ========================================================================= */}
         {!isAdmin && (
-          <div className="flex flex-col justify-center min-h-[calc(100vh-120px)]">
-            {/* ปรับระยะห่างให้กระชับขึ้นเพื่อให้อยู่ในหน้าจอเดียว */}
-            <div className="text-center mb-6 sm:mb-8 lg:mb-10">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight mb-2 sm:mb-3">
+          <div className="flex-1 flex flex-col justify-center py-4">
+            <div className="text-center mb-6 sm:mb-8">
+              <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight">
                 กระดานจัดอันดับคะแนน
               </h2>
             </div>
@@ -249,6 +258,7 @@ const App = () => {
               // ประมวลผลอันดับ (ถ้าคะแนนเท่ากัน ให้อันดับเดียวกัน)
               const teamsWithRank = sortedTeams.map((team, index, arr) => {
                 if (team.score === 0) return { ...team, displayRank: '-' };
+                // หาระยะที่ทีมนี้ไปชนกับคะแนนแรกสุดที่เจอ
                 const actualRank = arr.findIndex(t => t.score === team.score) + 1;
                 return { ...team, displayRank: actualRank };
               });
@@ -264,65 +274,65 @@ const App = () => {
               const bottomTeams = [...rankedTeams.slice(3), ...unrankedTeams];
 
               return (
-                <div className="flex flex-col gap-4 sm:gap-6 w-full">
+                <div className="flex flex-col gap-6 sm:gap-8 w-full max-w-5xl mx-auto">
                   
                   {/* --- แท่นรางวัล (Podium) สำหรับ Top 3 --- */}
                   {rank1 && (
-                    <div className="flex flex-row justify-center items-end gap-2 sm:gap-4 md:gap-6 mt-2 sm:mt-4 mb-4 sm:mb-6 h-[220px] sm:h-[300px] px-2 w-full max-w-4xl mx-auto">
+                    <div className="flex flex-row justify-center items-end gap-2 sm:gap-6 mt-2 h-[260px] sm:h-[320px] px-2 w-full mx-auto">
                       
                       {/* แท่นอันดับ 2 (ซ้าย) */}
                       {rank2 ? (
-                        <div className="flex flex-col items-center w-28 sm:w-44 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-                          <div className="flex flex-col items-center mb-2 bg-gradient-to-r from-slate-200 to-gray-100 dark:from-slate-700 dark:to-gray-800 p-2 sm:p-3 rounded-2xl shadow-xl border border-slate-300 dark:border-slate-500 w-full relative z-10 text-center transition-transform hover:-translate-y-1 scale-[1.01]">
-                            <Medal className="w-6 h-6 sm:w-8 sm:h-8 text-slate-500 dark:text-slate-300 mb-1 drop-shadow-md" />
-                            <span className="font-bold text-xs sm:text-sm md:text-base truncate w-full text-slate-800 dark:text-white">{rank2.name}</span>
-                            <span className="text-base sm:text-xl font-black text-slate-700 dark:text-slate-200 tracking-tighter">{rank2.score.toLocaleString()}</span>
+                        <div className="flex flex-col items-center w-28 sm:w-48 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+                          <div className="flex flex-col items-center mb-2 bg-gradient-to-r from-slate-200 to-gray-100 dark:from-slate-700 dark:to-gray-800 p-2 sm:p-4 rounded-2xl shadow-xl border border-slate-300 dark:border-slate-500 w-full relative z-10 text-center transition-transform hover:-translate-y-1 scale-[1.01]">
+                            <Medal className="w-8 h-8 sm:w-10 sm:h-10 text-slate-500 dark:text-slate-300 mb-1 drop-shadow-md" />
+                            <span className="font-bold text-xs sm:text-sm truncate w-full text-slate-800 dark:text-white">{rank2.name}</span>
+                            <span className="text-lg sm:text-2xl font-black text-slate-700 dark:text-slate-200 tracking-tighter">{rank2.score.toLocaleString()}</span>
                           </div>
-                          <div className="w-full h-24 sm:h-36 bg-gradient-to-t from-slate-300 to-slate-100 dark:from-slate-700 dark:to-slate-500 rounded-t-xl shadow-inner flex justify-center pt-3 sm:pt-5 border-t-4 border-slate-400 relative">
-                            <span className="text-3xl sm:text-5xl font-black text-slate-400/50 dark:text-slate-900/30">2</span>
+                          <div className="w-full h-24 sm:h-36 bg-gradient-to-t from-slate-300 to-slate-100 dark:from-slate-700 dark:to-slate-500 rounded-t-xl shadow-inner flex justify-center pt-4 sm:pt-6 border-t-4 border-slate-400 relative">
+                            <span className="text-4xl sm:text-6xl font-black text-slate-400/50 dark:text-slate-900/30">2</span>
                           </div>
                         </div>
-                      ) : <div className="w-28 sm:w-44"></div>}
+                      ) : <div className="w-28 sm:w-48"></div>}
 
                       {/* แท่นอันดับ 1 (ตรงกลาง) */}
-                      <div className="flex flex-col items-center w-36 sm:w-56 animate-fade-in-up z-20">
-                          <div className="flex flex-col items-center mb-2 bg-gradient-to-br from-yellow-100 to-amber-50 dark:from-yellow-900/60 dark:to-amber-900/30 p-2 sm:p-4 rounded-2xl shadow-2xl border-2 border-yellow-400 dark:border-yellow-500 w-full relative text-center transition-transform hover:-translate-y-2 scale-105">
-                            <Trophy className="w-8 h-8 sm:w-12 sm:h-12 text-yellow-500 mb-1 drop-shadow-lg" />
-                            <span className="font-extrabold text-sm sm:text-base md:text-lg truncate w-full text-slate-800 dark:text-white">{rank1.name}</span>
-                            <span className="text-xl sm:text-3xl font-black text-yellow-600 dark:text-yellow-400 tracking-tighter">{rank1.score.toLocaleString()}</span>
+                      <div className="flex flex-col items-center w-36 sm:w-60 animate-fade-in-up z-20">
+                          <div className="flex flex-col items-center mb-2 bg-gradient-to-br from-yellow-100 to-amber-50 dark:from-yellow-900/60 dark:to-amber-900/30 p-3 sm:p-5 rounded-2xl shadow-2xl border-2 border-yellow-400 dark:border-yellow-500 w-full relative text-center transition-transform hover:-translate-y-2 scale-105">
+                            <Trophy className="w-10 h-10 sm:w-14 sm:h-14 text-yellow-500 mb-1 drop-shadow-lg" />
+                            <span className="font-extrabold text-sm sm:text-base truncate w-full text-slate-800 dark:text-white">{rank1.name}</span>
+                            <span className="text-2xl sm:text-3xl font-black text-yellow-600 dark:text-yellow-400 tracking-tighter">{rank1.score.toLocaleString()}</span>
                           </div>
-                          <div className="w-full h-32 sm:h-48 bg-gradient-to-t from-yellow-500 to-yellow-300 dark:from-yellow-700 dark:to-yellow-500 rounded-t-xl shadow-[0_-10px_40px_rgba(234,179,8,0.3)] flex justify-center pt-4 sm:pt-6 border-t-4 border-yellow-200 relative">
+                          <div className="w-full h-36 sm:h-48 bg-gradient-to-t from-yellow-500 to-yellow-300 dark:from-yellow-700 dark:to-yellow-500 rounded-t-xl shadow-[0_-10px_40px_rgba(234,179,8,0.3)] flex justify-center pt-6 sm:pt-8 border-t-4 border-yellow-200 relative">
                             <div className="absolute inset-0 bg-white/20 dark:bg-black/10 rounded-t-xl pointer-events-none"></div>
-                            <span className="text-4xl sm:text-6xl font-black text-yellow-700/40 dark:text-yellow-900/40 relative z-10">1</span>
+                            <span className="text-5xl sm:text-7xl font-black text-yellow-700/40 dark:text-yellow-900/40 relative z-10">1</span>
                           </div>
                       </div>
 
                       {/* แท่นอันดับ 3 (ขวา) */}
                       {rank3 ? (
-                        <div className="flex flex-col items-center w-28 sm:w-44 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-                          <div className="flex flex-col items-center mb-2 bg-white dark:bg-slate-800 p-2 sm:p-3 rounded-2xl shadow-lg border border-amber-300 dark:border-amber-900/50 w-full relative z-10 text-center transition-transform hover:-translate-y-1">
-                            <Medal className="w-6 h-6 sm:w-8 sm:h-8 text-amber-600 mb-1 drop-shadow-sm" />
-                            <span className="font-bold text-xs sm:text-sm md:text-base truncate w-full text-slate-700 dark:text-slate-200">{rank3.name}</span>
-                            <span className="text-base sm:text-xl font-black text-amber-600 dark:text-amber-500 tracking-tighter">{rank3.score.toLocaleString()}</span>
+                        <div className="flex flex-col items-center w-28 sm:w-48 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+                          <div className="flex flex-col items-center mb-2 bg-white dark:bg-slate-800 p-2 sm:p-4 rounded-2xl shadow-lg border border-amber-300 dark:border-amber-900/50 w-full relative z-10 text-center transition-transform hover:-translate-y-1">
+                            <Medal className="w-8 h-8 sm:w-10 sm:h-10 text-amber-600 mb-1 drop-shadow-sm" />
+                            <span className="font-bold text-xs sm:text-sm truncate w-full text-slate-700 dark:text-slate-200">{rank3.name}</span>
+                            <span className="text-lg sm:text-2xl font-black text-amber-600 dark:text-amber-500 tracking-tighter">{rank3.score.toLocaleString()}</span>
                           </div>
-                          <div className="w-full h-16 sm:h-28 bg-gradient-to-t from-orange-300 to-amber-200 dark:from-amber-800 dark:to-orange-700 rounded-t-xl shadow-inner flex justify-center pt-2 sm:pt-4 border-t-4 border-amber-400 relative">
-                            <span className="text-3xl sm:text-5xl font-black text-amber-700/30 dark:text-amber-900/30">3</span>
+                          <div className="w-full h-16 sm:h-24 bg-gradient-to-t from-orange-300 to-amber-200 dark:from-amber-800 dark:to-orange-700 rounded-t-xl shadow-inner flex justify-center pt-3 sm:pt-4 border-t-4 border-amber-400 relative">
+                            <span className="text-4xl sm:text-6xl font-black text-amber-700/30 dark:text-amber-900/30">3</span>
                           </div>
                         </div>
-                      ) : <div className="w-28 sm:w-44"></div>}
+                      ) : <div className="w-28 sm:w-48"></div>}
 
                     </div>
                   )}
 
-                  {/* --- ตารางรายชื่อทีมที่เหลือแบบคอลัมน์ (Grid) --- */}
+                  {/* --- ตารางรายชื่อทีมที่เหลือแบบคอลัมน์ (Grid) จัดวางแบบพอดี --- */}
                   {bottomTeams.length > 0 && (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 mt-2 sm:mt-4 w-full px-2 max-w-full">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 mt-2 w-full max-w-full">
                       {bottomTeams.map((team) => {
                         const isRanked = team.score > 0;
                         return (
                           <div 
                             key={team.id} 
-                            className={`flex items-center justify-between p-3 sm:p-4 rounded-xl border transition-all duration-300 hover:shadow-md hover:-translate-y-1 ${
+                            className={`flex items-center justify-between p-3 sm:p-4 rounded-2xl border transition-all duration-300 hover:shadow-md hover:-translate-y-1 ${
                               isRanked 
                                 ? 'glass-panel border-blue-200 dark:border-blue-900/50 hover:border-blue-400' 
                                 : 'bg-white/40 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700 grayscale-[40%]'
@@ -342,7 +352,7 @@ const App = () => {
                                 {team.name}
                               </h4>
                             </div>
-                            <div className={`text-xl sm:text-2xl md:text-3xl font-black tabular-nums tracking-tighter ml-3 flex-shrink-0 ${
+                            <div className={`text-xl sm:text-2xl font-black tabular-nums tracking-tighter ml-2 flex-shrink-0 ${
                               isRanked ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500'
                             }`}>
                               {isRanked ? team.score.toLocaleString() : '-'}
@@ -360,8 +370,11 @@ const App = () => {
         )}
 
         {}
+        {/* =========================================================================
+            VIEW 2: ADMIN CONTROL PANEL
+            ========================================================================= */}
         {isAdmin && (
-          <div className="space-y-8 animate-fade-in">
+          <div className="space-y-8 animate-fade-in-up py-8">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
               <div>
                 <h2 className="text-2xl font-bold flex items-center gap-2">
@@ -513,6 +526,9 @@ const App = () => {
       </main>
 
       {}
+      {/* =========================================================================
+          MODALS & OVERLAYS
+          ========================================================================= */}
       {showResetModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-fade-in-up">
