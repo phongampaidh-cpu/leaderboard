@@ -240,7 +240,7 @@ const App = () => {
             ========================================================================= */}
         {!isAdmin && (
           <div className="flex-1 flex flex-col justify-center py-4">
-            <div className="text-center mb-6 sm:mb-8">
+            <div className="text-center mb-6 sm:mb-8 -mt-[0.7cm]">
               <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight">
                 กระดานจัดอันดับคะแนน
               </h2>
