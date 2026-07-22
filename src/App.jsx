@@ -235,8 +235,8 @@ const App = () => {
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight mb-2 sm:mb-3">
                 กระดานจัดอันดับคะแนน
               </h2>
-              <p className="text-sm sm:text-base md:text-lg text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
-                <br>อัปเดตสถานการณ์แบบเรียลไทม์ ร่วมลุ้นและเป็นกำลังใจให้ทุกทีม </br>
+              <p className="text-sm sm:text-base md:text-lg text-slate-200 dark:text-slate-400 max-w-2xl mx-auto">
+                อัปเดตสถานการณ์แบบเรียลไทม์ ร่วมลุ้นและเป็นกำลังใจให้ทุกทีม
               </p>
             </div>
 
