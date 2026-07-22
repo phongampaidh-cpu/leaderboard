@@ -4,29 +4,45 @@ import {
   RefreshCcw, Moon, Sun, ArrowLeft, PartyPopper
 } from 'lucide-react';
 
-// เพิ่มคอมโพเนนต์กราฟิกเด็กนักเรียน (SVG) สำหรับแอนิเมชันกระโดด
+// คอมโพเนนต์กราฟิกเด็กนักเรียน (ปรับให้มีความน่ารักสมจริง และใส่ชุดนักเรียน)
 const StudentMascot = ({ className }) => (
   <svg className={className} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <g transform="translate(0, 10)">
-      {/* Arms */}
-      <path d="M30 55 Q20 30 15 20" stroke="#fed7aa" strokeWidth="8" strokeLinecap="round" />
-      <path d="M70 55 Q80 30 85 20" stroke="#fed7aa" strokeWidth="8" strokeLinecap="round" />
+    <g transform="translate(0, 5)">
+      {/* Arms (Raised up for celebration) */}
+      <path d="M25 55 C 15 45, 10 25, 20 15" stroke="#FDBA74" strokeWidth="7" strokeLinecap="round" />
+      <path d="M75 55 C 85 45, 90 25, 80 15" stroke="#FDBA74" strokeWidth="7" strokeLinecap="round" />
+      
+      {/* Hands */}
+      <circle cx="20" cy="15" r="5" fill="#FDBA74" />
+      <circle cx="80" cy="15" r="5" fill="#FDBA74" />
+
       {/* Shirt */}
-      <rect x="35" y="45" width="30" height="30" rx="8" fill="#ffffff" stroke="#e2e8f0" strokeWidth="2" />
-      <path d="M35 45 L50 55 L65 45" stroke="#cbd5e1" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M50 45 L50 75" stroke="#cbd5e1" strokeWidth="2" strokeLinecap="round" fill="none" />
+      <path d="M30 45 Q 50 35 70 45 L 75 80 Q 50 90 25 80 Z" fill="#F8FAFC" stroke="#E2E8F0" strokeWidth="2" />
+      
+      {/* Shirt Collar */}
+      <path d="M38 43 L 50 55 L 62 43" stroke="#CBD5E1" strokeWidth="2" fill="#F1F5F9" strokeLinejoin="round" />
+      
+      {/* Tie */}
+      <path d="M47 55 L 53 55 L 55 75 L 50 82 L 45 75 Z" fill="#1D4ED8" />
+      
       {/* Head */}
-      <circle cx="50" cy="30" r="18" fill="#fed7aa" />
-      {/* Hair */}
-      <path d="M32 30 C32 5, 68 5, 68 30 C68 18, 32 18, 32 30 Z" fill="#1f2937" />
-      {/* Eyes */}
-      <path d="M41 28 Q44 24 47 28" stroke="#1f2937" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-      <path d="M53 28 Q56 24 59 28" stroke="#1f2937" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-      {/* Mouth */}
-      <path d="M43 34 Q50 42 57 34" stroke="#1f2937" strokeWidth="2" strokeLinecap="round" fill="#ef4444" />
+      <circle cx="50" cy="28" r="21" fill="#FDBA74" />
+      
+      {/* Hair (Neat student haircut) */}
+      <path d="M26 28 C 26 -5, 74 -5, 74 28 C 74 15, 26 15, 26 28 Z" fill="#1E293B" />
+      <path d="M26 25 Q 30 15 40 12" stroke="#1E293B" strokeWidth="3" strokeLinecap="round" />
+      
+      {/* Eyes (Sparkly happy eyes) */}
+      <path d="M39 25 Q 42.5 20 46 25" stroke="#1E293B" strokeWidth="3" strokeLinecap="round" fill="none" />
+      <path d="M54 25 Q 57.5 20 61 25" stroke="#1E293B" strokeWidth="3" strokeLinecap="round" fill="none" />
+      
+      {/* Mouth (Happy open mouth) */}
+      <path d="M42 32 Q 50 44 58 32" fill="#EF4444" />
+      <path d="M45 32 Q 50 38 55 32" fill="#FCA5A5" /> {/* Tongue */}
+      
       {/* Cheeks */}
-      <circle cx="39" cy="34" r="3" fill="#f87171" opacity="0.5" />
-      <circle cx="61" cy="34" r="3" fill="#f87171" opacity="0.5" />
+      <circle cx="36" cy="32" r="4.5" fill="#F87171" opacity="0.6" />
+      <circle cx="64" cy="32" r="4.5" fill="#F87171" opacity="0.6" />
     </g>
   </svg>
 );
@@ -38,7 +54,6 @@ const App = () => {
     if (saved) {
       return JSON.parse(saved);
     }
-    // ข้อมูลเริ่มต้นสำหรับทดสอบ
     return [
       { id: '1', name: 'ประวัติศาสตร์ยุคต้น', score: 0 },
       { id: '2', name: 'สยามประเทศ', score: 0 },
@@ -69,7 +84,6 @@ const App = () => {
     return localStorage.getItem('bmpn_celebrate') === 'true';
   });
 
-  // State สำหรับเก็บรายชื่อทีมที่กำลังมีแอนิเมชันเด็กนักเรียนกระโดด
   const [animatingTeams, setAnimatingTeams] = useState(new Set());
   const prevTeamsRef = useRef(teams);
 
@@ -150,7 +164,6 @@ const App = () => {
         return next;
       });
 
-      // หน่วงเวลาเคลียร์แอนิเมชัน 2.5 วินาที
       setTimeout(() => {
         setAnimatingTeams(prev => {
           const next = new Set(prev);
@@ -174,7 +187,6 @@ const App = () => {
   }, [darkMode]);
 
   // === Helper Functions ===
-  // จัดเรียงทีมตามคะแนน (มากไปน้อย) และถ้าคะแนนเท่ากัน เรียงตามตัวอักษร ก-ฮ
   const sortedTeams = [...teams].sort((a, b) => {
     if (b.score === a.score) {
       return a.name.localeCompare(b.name, 'th');
@@ -217,7 +229,7 @@ const App = () => {
   const updateScore = (id, amount) => {
     setTeams(teams.map(t => {
       if (t.id === id) {
-        return { ...t, score: Math.max(0, t.score + amount) }; // ป้องกันคะแนนติดลบ
+        return { ...t, score: Math.max(0, t.score + amount) }; 
       }
       return t;
     }));
@@ -231,9 +243,6 @@ const App = () => {
 
   // === สไตล์ CSS เพิ่มเติม ===
   const customStyles = `
-    .flip-list-move {
-      transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    }
     .glass-panel {
       background: rgba(255, 255, 255, 0.6);
       backdrop-filter: blur(12px);
@@ -252,14 +261,14 @@ const App = () => {
       animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
-    /* แอนิเมชันเด็กนักเรียนกระโดด */
+    /* แอนิเมชันเด็กนักเรียนกระโดดแบบสมจริงและน่ารักขึ้น */
     @keyframes studentPop {
-      0% { transform: translateX(-50%) translateY(100px) scale(0.8); opacity: 0; }
-      15% { transform: translateX(-50%) translateY(-25px) scale(1.1); opacity: 1; }
-      30% { transform: translateX(-50%) translateY(5px) scale(1); opacity: 1; }
-      45% { transform: translateX(-50%) translateY(-20px) scale(1.05); opacity: 1; }
-      60% { transform: translateX(-50%) translateY(5px) scale(1); opacity: 1; }
-      75% { transform: translateX(-50%) translateY(-15px) scale(1.02); opacity: 1; }
+      0% { transform: translateX(-50%) translateY(100px) scale(0.6) rotate(0deg); opacity: 0; }
+      15% { transform: translateX(-50%) translateY(-35px) scale(1.15) rotate(-6deg); opacity: 1; }
+      30% { transform: translateX(-50%) translateY(10px) scale(0.95) rotate(4deg); opacity: 1; }
+      45% { transform: translateX(-50%) translateY(-25px) scale(1.05) rotate(-3deg); opacity: 1; }
+      60% { transform: translateX(-50%) translateY(0px) scale(1) rotate(2deg); opacity: 1; }
+      75% { transform: translateX(-50%) translateY(0px) scale(1) rotate(0deg); opacity: 1; }
       100% { transform: translateX(-50%) translateY(100px) scale(0.8); opacity: 0; }
     }
     .student-container {
@@ -269,7 +278,7 @@ const App = () => {
       pointer-events: none;
     }
     .is-animating .student-container {
-      animation: studentPop 2.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+      animation: studentPop 2.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
     }
   `;
 
@@ -318,11 +327,6 @@ const App = () => {
             ========================================================================= */}
         {!isAdmin && (
           <div className="flex-1 flex flex-col justify-center py-4">
-            <div className="text-center mb-6 sm:mb-8 -mt-[0.7cm]">
-              <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight">
-                กระดานจัดอันดับคะแนน
-              </h2>
-            </div>
 
             {(() => {
               if (teams.length === 0) {
@@ -336,7 +340,6 @@ const App = () => {
               // ประมวลผลอันดับ (ถ้าคะแนนเท่ากัน ให้อันดับเดียวกัน)
               const teamsWithRank = sortedTeams.map((team, index, arr) => {
                 if (team.score === 0) return { ...team, displayRank: '-' };
-                // หาระยะที่ทีมนี้ไปชนกับคะแนนแรกสุดที่เจอ
                 const actualRank = arr.findIndex(t => t.score === team.score) + 1;
                 return { ...team, displayRank: actualRank };
               });
@@ -352,19 +355,19 @@ const App = () => {
               const bottomTeams = [...rankedTeams.slice(3), ...unrankedTeams];
 
               return (
-                <div className="flex flex-col gap-6 sm:gap-8 w-full max-w-5xl mx-auto">
+                <div className="flex flex-col gap-6 sm:gap-10 w-full">
                   
                   {/* --- แท่นรางวัล (Podium) สำหรับ Top 3 --- */}
                   {rank1 && (
-                    <div className="flex flex-row justify-center items-end gap-2 sm:gap-6 mt-6 sm:mt-8 mb-6 h-[280px] sm:h-[350px] px-2 w-full max-w-4xl mx-auto">
+                    <div className="flex flex-row justify-center items-end gap-2 sm:gap-6 mt-4 sm:mt-6 mb-4 h-[280px] sm:h-[350px] px-2 w-full max-w-4xl mx-auto">
                       
                       {/* แท่นอันดับ 2 (ซ้าย) */}
                       {rank2 ? (
                         <div className={`flex flex-col items-center w-28 sm:w-48 animate-fade-in-up relative ${animatingTeams.has(rank2.id) ? 'is-animating' : ''}`} style={{ animationDelay: '0.1s' }}>
                           
-                          {/* เด็กนักเรียนกระโดด (จะแสดงเมื่อได้คะแนน) */}
-                          <div className="student-container absolute -top-14 sm:-top-20 left-1/2">
-                            <StudentMascot className="w-16 h-16 sm:w-24 sm:h-24 drop-shadow-lg" />
+                          {/* เด็กนักเรียนกระโดด */}
+                          <div className="student-container absolute -top-20 sm:-top-28 left-1/2">
+                            <StudentMascot className="w-20 h-20 sm:w-32 sm:h-32 drop-shadow-xl" />
                           </div>
 
                           <div className="flex flex-col items-center mb-2 bg-gradient-to-r from-slate-200 to-gray-100 dark:from-slate-700 dark:to-gray-800 p-2 sm:p-4 rounded-2xl shadow-xl border border-slate-300 dark:border-slate-500 w-full relative z-10 text-center transition-transform hover:-translate-y-1 scale-[1.01]">
@@ -381,9 +384,9 @@ const App = () => {
                       {/* แท่นอันดับ 1 (ตรงกลาง) */}
                       <div className={`flex flex-col items-center w-36 sm:w-60 animate-fade-in-up z-20 relative ${animatingTeams.has(rank1.id) ? 'is-animating' : ''}`}>
                           
-                          {/* เด็กนักเรียนกระโดด (จะแสดงเมื่อได้คะแนน) */}
-                          <div className="student-container absolute -top-16 sm:-top-24 left-1/2">
-                            <StudentMascot className="w-20 h-20 sm:w-32 sm:h-32 drop-shadow-xl" />
+                          {/* เด็กนักเรียนกระโดด */}
+                          <div className="student-container absolute -top-24 sm:-top-36 left-1/2">
+                            <StudentMascot className="w-24 h-24 sm:w-40 sm:h-40 drop-shadow-2xl" />
                           </div>
 
                           <div className="flex flex-col items-center mb-2 bg-gradient-to-br from-yellow-100 to-amber-50 dark:from-yellow-900/60 dark:to-amber-900/30 p-3 sm:p-5 rounded-2xl shadow-2xl border-2 border-yellow-400 dark:border-yellow-500 w-full relative z-10 text-center transition-transform hover:-translate-y-2 scale-105">
@@ -401,9 +404,9 @@ const App = () => {
                       {rank3 ? (
                         <div className={`flex flex-col items-center w-28 sm:w-48 animate-fade-in-up relative ${animatingTeams.has(rank3.id) ? 'is-animating' : ''}`} style={{ animationDelay: '0.2s' }}>
                           
-                          {/* เด็กนักเรียนกระโดด (จะแสดงเมื่อได้คะแนน) */}
-                          <div className="student-container absolute -top-14 sm:-top-20 left-1/2">
-                            <StudentMascot className="w-16 h-16 sm:w-24 sm:h-24 drop-shadow-lg" />
+                          {/* เด็กนักเรียนกระโดด */}
+                          <div className="student-container absolute -top-20 sm:-top-28 left-1/2">
+                            <StudentMascot className="w-20 h-20 sm:w-32 sm:h-32 drop-shadow-xl" />
                           </div>
 
                           <div className="flex flex-col items-center mb-2 bg-white dark:bg-slate-800 p-2 sm:p-4 rounded-2xl shadow-lg border border-amber-300 dark:border-amber-900/50 w-full relative z-10 text-center transition-transform hover:-translate-y-1">
@@ -420,21 +423,21 @@ const App = () => {
                     </div>
                   )}
 
-                  {/* --- ตารางรายชื่อทีมที่เหลือแบบคอลัมน์ (Grid) จัดวางแบบพอดี --- */}
+                  {/* --- ตารางรายชื่อทีมที่เหลือแบบคอลัมน์ (Grid) ขยายขนาดการ์ด --- */}
                   {bottomTeams.length > 0 && (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 mt-2 w-full max-w-full">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5 w-full px-2 max-w-full pb-4">
                       {bottomTeams.map((team) => {
                         const isRanked = team.score > 0;
                         return (
                           <div 
                             key={team.id} 
-                            className={`flex items-center justify-between p-3 sm:p-4 rounded-2xl border transition-all duration-300 hover:shadow-md hover:-translate-y-1 ${
+                            className={`flex items-center justify-between p-3 sm:p-5 rounded-2xl border transition-all duration-300 hover:shadow-md hover:-translate-y-1 ${
                               isRanked 
                                 ? 'glass-panel border-blue-200 dark:border-blue-900/50 hover:border-blue-400' 
                                 : 'bg-white/40 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700 grayscale-[40%]'
                             }`}
                           >
-                            <div className="flex items-center gap-3 overflow-hidden">
+                            <div className="flex items-center gap-3 sm:gap-4 overflow-hidden">
                               <div className={`w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 rounded-full flex items-center justify-center font-bold text-sm sm:text-base shadow-inner ${
                                 isRanked 
                                   ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300' 
@@ -448,7 +451,7 @@ const App = () => {
                                 {team.name}
                               </h4>
                             </div>
-                            <div className={`text-xl sm:text-2xl font-black tabular-nums tracking-tighter ml-2 flex-shrink-0 ${
+                            <div className={`text-xl sm:text-2xl md:text-3xl font-black tabular-nums tracking-tighter ml-3 flex-shrink-0 ${
                               isRanked ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500'
                             }`}>
                               {isRanked ? team.score.toLocaleString() : '-'}
