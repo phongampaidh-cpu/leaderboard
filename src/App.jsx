@@ -1,24 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Trophy, Medal, Settings, UserPlus, Trash2, Edit2, 
-  RefreshCcw, Moon, Sun, ArrowLeft
+  RefreshCcw, Moon, Sun, ArrowLeft, PartyPopper
 } from 'lucide-react';
 
 const App = () => {
   // === State Management ===
   const [teams, setTeams] = useState(() => {
-    // โหลดข้อมูลจาก localStorage เมื่อเริ่มต้น
     const saved = localStorage.getItem('bmpn_teams');
     if (saved) {
       return JSON.parse(saved);
     }
-    // ข้อมูลเริ่มต้นตัวอย่าง
     return [
       { id: '1', name: 'ประวัติศาสตร์ยุคต้น', score: 0 },
       { id: '2', name: 'สยามประเทศ', score: 0 },
       { id: '3', name: 'นักปราชญ์ล้านนา', score: 0 },
       { id: '4', name: 'อยุธยารุ่งเรือง', score: 0 },
-      { id: '5', name: 'รัตนโกสินทร์ศก', score: 0 }
+      { id: '5', name: 'รัตนโกสินทร์ศก', score: 0 },
+      { id: '6', name: 'ยุคทองของไทย', score: 0 },
+      { id: '7', name: 'ตำนานบรรพชน', score: 0 },
+      { id: '8', name: 'จารึกสุโขทัย', score: 0 },
+      { id: '9', name: 'วีรกรรมกู้ชาติ', score: 0 },
+      { id: '10', name: 'ศิลปวัฒนธรรม', score: 0 }
     ];
   });
 
@@ -33,14 +36,52 @@ const App = () => {
   const [showResetModal, setShowResetModal] = useState(false);
   const [editingTeam, setEditingTeam] = useState(null);
   const [editName, setEditName] = useState('');
+  
+  const [isCelebrating, setIsCelebrating] = useState(() => {
+    return localStorage.getItem('bmpn_celebrate') === 'true';
+  });
 
   // === Effects ===
-  // บันทึกข้อมูลลง localStorage เมื่อ teams เปลี่ยนแปลง
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js';
+    script.async = true;
+    document.body.appendChild(script);
+    return () => document.body.removeChild(script);
+  }, []);
+
+  useEffect(() => {
+    let interval;
+    if (isCelebrating) {
+      localStorage.setItem('bmpn_celebrate', 'true');
+      const randomInRange = (min, max) => Math.random() * (max - min) + min;
+      
+      interval = setInterval(() => {
+        if (window.confetti) {
+          window.confetti({
+            startVelocity: 30,
+            spread: 360,
+            ticks: 60,
+            zIndex: 100,
+            particleCount: Math.floor(randomInRange(50, 100)),
+            colors: ['#26ccff', '#a25afd', '#ff5e7e', '#88ff5a', '#fcff42', '#ffa62d', '#ff36ff'],
+            origin: { x: randomInRange(0.1, 0.9), y: Math.random() - 0.2 }
+          });
+        }
+      }, 400);
+    } else {
+      localStorage.setItem('bmpn_celebrate', 'false');
+      if (window.confetti) {
+        window.confetti.reset();
+      }
+    }
+    return () => clearInterval(interval);
+  }, [isCelebrating]);
+
   useEffect(() => {
     localStorage.setItem('bmpn_teams', JSON.stringify(teams));
   }, [teams]);
 
-  // ซิงค์ข้อมูลข้ามหน้าต่าง (สำหรับกรณีเปิดโหมด Admin จอโน้ตบุ๊ก และเปิด Leaderboard จอโปรเจกเตอร์)
   useEffect(() => {
     const syncAcrossWindows = (e) => {
       if (e.key === 'bmpn_teams' && e.newValue) {
@@ -49,13 +90,15 @@ const App = () => {
       if (e.key === 'bmpn_theme') {
         setDarkMode(e.newValue === 'dark');
       }
+      if (e.key === 'bmpn_celebrate') {
+        setIsCelebrating(e.newValue === 'true');
+      }
     };
 
     window.addEventListener('storage', syncAcrossWindows);
     return () => window.removeEventListener('storage', syncAcrossWindows);
   }, []);
 
-  // จัดการ Dark Mode
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add('dark');
@@ -67,10 +110,9 @@ const App = () => {
   }, [darkMode]);
 
   // === Helper Functions ===
-  // เรียงลำดับคะแนนจากมากไปน้อย (ถ้าคะแนนเท่ากัน ให้เรียงตามตัวอักษรชื่อทีม ก-ฮ)
   const sortedTeams = [...teams].sort((a, b) => {
     if (b.score === a.score) {
-      return a.name.localeCompare(b.name, 'th'); // เรียงตามภาษาไทย
+      return a.name.localeCompare(b.name, 'th');
     }
     return b.score - a.score;
   });
@@ -110,8 +152,7 @@ const App = () => {
   const updateScore = (id, amount) => {
     setTeams(teams.map(t => {
       if (t.id === id) {
-        // ป้องกันคะแนนติดลบ (ถ้าไม่ต้องการให้ลบเกิน 0 สามารถใส่เงื่อนไข Math.max(0, t.score + amount) ได้)
-        return { ...t, score: t.score + amount };
+        return { ...t, score: Math.max(0, t.score + amount) }; // ป้องกันคะแนนติดลบ
       }
       return t;
     }));
@@ -119,11 +160,15 @@ const App = () => {
 
   const confirmReset = () => {
     setTeams(teams.map(t => ({ ...t, score: 0 })));
+    setIsCelebrating(false);
     setShowResetModal(false);
   };
 
   // === สไตล์ CSS เพิ่มเติม ===
   const customStyles = `
+    .flip-list-move {
+      transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
     .glass-panel {
       background: rgba(255, 255, 255, 0.6);
       backdrop-filter: blur(12px);
@@ -182,17 +227,16 @@ const App = () => {
       {/* --- Main Content Area --- */}
       <main className="container mx-auto px-4 py-8 max-w-6xl">
         
-        {}
         {/* =========================================================================
             VIEW 1: PUBLIC LEADERBOARD (เมื่อไม่ได้อยู่ในโหมด Admin)
             ========================================================================= */}
         {!isAdmin && (
-          <div className="space-y-6">
-            <div className="text-center mb-10">
-              <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-4">
+          <div className="space-y-4 sm:space-y-6">
+            <div className="text-center mb-4 sm:mb-8">
+              <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">
                 กระดานจัดอันดับคะแนน
               </h2>
-              <p className="text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
+              <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
                 อัปเดตสถานการณ์แบบเรียลไทม์ ร่วมลุ้นและเป็นกำลังใจให้ทุกทีม
               </p>
             </div>
@@ -206,11 +250,9 @@ const App = () => {
                 );
               }
 
-              // ประมวลผลอันดับ (แบบแข่งขันสากล: ถ้าคะแนนเท่ากัน ได้อันดับเดียวกัน และข้ามอันดับถัดไป)
+              // ประมวลผลอันดับ (ถ้าคะแนนเท่ากัน ให้อันดับเดียวกัน)
               const teamsWithRank = sortedTeams.map((team, index, arr) => {
                 if (team.score === 0) return { ...team, displayRank: '-' };
-                
-                // หาระยะของทีมแรกที่ได้คะแนนเท่ากับทีมนี้ แล้ว + 1
                 const actualRank = arr.findIndex(t => t.score === team.score) + 1;
                 return { ...team, displayRank: actualRank };
               });
@@ -226,22 +268,22 @@ const App = () => {
               const bottomTeams = [...rankedTeams.slice(3), ...unrankedTeams];
 
               return (
-                <div className="flex flex-col gap-8 w-full">
+                <div className="flex flex-col gap-4 sm:gap-6 w-full">
                   
                   {/* --- แท่นรางวัล (Podium) สำหรับ Top 3 --- */}
                   {rank1 && (
-                    <div className="flex flex-row justify-center items-end gap-2 sm:gap-6 mt-8 mb-4 h-[340px] sm:h-[400px] px-2 w-full max-w-4xl mx-auto">
+                    <div className="flex flex-row justify-center items-end gap-2 sm:gap-6 mt-2 sm:mt-4 mb-2 h-[280px] sm:h-[350px] px-2 w-full max-w-4xl mx-auto">
                       
                       {/* แท่นอันดับ 2 (ซ้าย) */}
                       {rank2 ? (
                         <div className="flex flex-col items-center w-28 sm:w-48 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-                          <div className="flex flex-col items-center mb-2 bg-gradient-to-r from-slate-200 to-gray-100 dark:from-slate-700 dark:to-gray-800 p-2 sm:p-4 rounded-2xl shadow-xl border border-slate-300 dark:border-slate-500 w-full relative z-10 text-center transition-transform hover:-translate-y-1">
-                            <Medal className="w-8 h-8 sm:w-12 sm:h-12 text-slate-500 dark:text-slate-300 mb-1 drop-shadow-md" />
-                            <span className="font-bold text-xs sm:text-base truncate w-full text-slate-800 dark:text-white">{rank2.name}</span>
-                            <span className="text-lg sm:text-3xl font-black text-slate-700 dark:text-slate-200 tracking-tighter">{rank2.score.toLocaleString()}</span>
+                          <div className="flex flex-col items-center mb-2 bg-gradient-to-r from-slate-200 to-gray-100 dark:from-slate-700 dark:to-gray-800 p-2 sm:p-4 rounded-2xl shadow-xl border border-slate-300 dark:border-slate-500 w-full relative z-10 text-center transition-transform hover:-translate-y-1 scale-[1.01]">
+                            <Medal className="w-8 h-8 sm:w-10 sm:h-10 text-slate-500 dark:text-slate-300 mb-1 drop-shadow-md" />
+                            <span className="font-bold text-xs sm:text-sm truncate w-full text-slate-800 dark:text-white">{rank2.name}</span>
+                            <span className="text-lg sm:text-2xl font-black text-slate-700 dark:text-slate-200 tracking-tighter">{rank2.score.toLocaleString()}</span>
                           </div>
-                          <div className="w-full h-32 sm:h-48 bg-gradient-to-t from-slate-300 to-slate-100 dark:from-slate-700 dark:to-slate-500 rounded-t-xl shadow-inner flex justify-center pt-4 sm:pt-6 border-t-4 border-slate-400 relative">
-                            <span className="text-5xl sm:text-7xl font-black text-slate-400/50 dark:text-slate-900/30">2</span>
+                          <div className="w-full h-28 sm:h-40 bg-gradient-to-t from-slate-300 to-slate-100 dark:from-slate-700 dark:to-slate-500 rounded-t-xl shadow-inner flex justify-center pt-4 sm:pt-6 border-t-4 border-slate-400 relative">
+                            <span className="text-4xl sm:text-6xl font-black text-slate-400/50 dark:text-slate-900/30">2</span>
                           </div>
                         </div>
                       ) : <div className="w-28 sm:w-48"></div>}
@@ -249,13 +291,13 @@ const App = () => {
                       {/* แท่นอันดับ 1 (ตรงกลาง) */}
                       <div className="flex flex-col items-center w-36 sm:w-60 animate-fade-in-up z-20">
                           <div className="flex flex-col items-center mb-2 bg-gradient-to-br from-yellow-100 to-amber-50 dark:from-yellow-900/60 dark:to-amber-900/30 p-3 sm:p-5 rounded-2xl shadow-2xl border-2 border-yellow-400 dark:border-yellow-500 w-full relative text-center transition-transform hover:-translate-y-2 scale-105">
-                            <Trophy className="w-10 h-10 sm:w-16 sm:h-16 text-yellow-500 mb-1 drop-shadow-lg" />
-                            <span className="font-extrabold text-sm sm:text-xl truncate w-full text-slate-800 dark:text-white">{rank1.name}</span>
-                            <span className="text-2xl sm:text-4xl font-black text-yellow-600 dark:text-yellow-400 tracking-tighter">{rank1.score.toLocaleString()}</span>
+                            <Trophy className="w-10 h-10 sm:w-14 sm:h-14 text-yellow-500 mb-1 drop-shadow-lg" />
+                            <span className="font-extrabold text-sm sm:text-base truncate w-full text-slate-800 dark:text-white">{rank1.name}</span>
+                            <span className="text-2xl sm:text-3xl font-black text-yellow-600 dark:text-yellow-400 tracking-tighter">{rank1.score.toLocaleString()}</span>
                           </div>
-                          <div className="w-full h-44 sm:h-64 bg-gradient-to-t from-yellow-500 to-yellow-300 dark:from-yellow-700 dark:to-yellow-500 rounded-t-xl shadow-[0_-10px_40px_rgba(234,179,8,0.3)] flex justify-center pt-6 sm:pt-8 border-t-4 border-yellow-200 relative">
+                          <div className="w-full h-40 sm:h-56 bg-gradient-to-t from-yellow-500 to-yellow-300 dark:from-yellow-700 dark:to-yellow-500 rounded-t-xl shadow-[0_-10px_40px_rgba(234,179,8,0.3)] flex justify-center pt-6 sm:pt-8 border-t-4 border-yellow-200 relative">
                             <div className="absolute inset-0 bg-white/20 dark:bg-black/10 rounded-t-xl pointer-events-none"></div>
-                            <span className="text-6xl sm:text-8xl font-black text-yellow-700/40 dark:text-yellow-900/40 relative z-10">1</span>
+                            <span className="text-5xl sm:text-7xl font-black text-yellow-700/40 dark:text-yellow-900/40 relative z-10">1</span>
                           </div>
                       </div>
 
@@ -263,12 +305,12 @@ const App = () => {
                       {rank3 ? (
                         <div className="flex flex-col items-center w-28 sm:w-48 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
                           <div className="flex flex-col items-center mb-2 bg-white dark:bg-slate-800 p-2 sm:p-4 rounded-2xl shadow-lg border border-amber-300 dark:border-amber-900/50 w-full relative z-10 text-center transition-transform hover:-translate-y-1">
-                            <Medal className="w-8 h-8 sm:w-12 sm:h-12 text-amber-600 mb-1 drop-shadow-sm" />
-                            <span className="font-bold text-xs sm:text-base truncate w-full text-slate-700 dark:text-slate-200">{rank3.name}</span>
-                            <span className="text-lg sm:text-3xl font-black text-amber-600 dark:text-amber-500 tracking-tighter">{rank3.score.toLocaleString()}</span>
+                            <Medal className="w-8 h-8 sm:w-10 sm:h-10 text-amber-600 mb-1 drop-shadow-sm" />
+                            <span className="font-bold text-xs sm:text-sm truncate w-full text-slate-700 dark:text-slate-200">{rank3.name}</span>
+                            <span className="text-lg sm:text-2xl font-black text-amber-600 dark:text-amber-500 tracking-tighter">{rank3.score.toLocaleString()}</span>
                           </div>
-                          <div className="w-full h-24 sm:h-36 bg-gradient-to-t from-orange-300 to-amber-200 dark:from-amber-800 dark:to-orange-700 rounded-t-xl shadow-inner flex justify-center pt-3 sm:pt-5 border-t-4 border-amber-400 relative">
-                            <span className="text-5xl sm:text-7xl font-black text-amber-700/30 dark:text-amber-900/30">3</span>
+                          <div className="w-full h-20 sm:h-28 bg-gradient-to-t from-orange-300 to-amber-200 dark:from-amber-800 dark:to-orange-700 rounded-t-xl shadow-inner flex justify-center pt-3 sm:pt-4 border-t-4 border-amber-400 relative">
+                            <span className="text-4xl sm:text-6xl font-black text-amber-700/30 dark:text-amber-900/30">3</span>
                           </div>
                         </div>
                       ) : <div className="w-28 sm:w-48"></div>}
@@ -278,33 +320,33 @@ const App = () => {
 
                   {/* --- ตารางรายชื่อทีมที่เหลือแบบคอลัมน์ (Grid) --- */}
                   {bottomTeams.length > 0 && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6 max-w-6xl mx-auto w-full">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3 mt-2 w-full px-2 max-w-full">
                       {bottomTeams.map((team) => {
                         const isRanked = team.score > 0;
                         return (
                           <div 
                             key={team.id} 
-                            className={`flex items-center justify-between p-4 rounded-2xl border transition-all duration-300 hover:shadow-md ${
+                            className={`flex items-center justify-between p-2 sm:p-3 rounded-xl border transition-all duration-300 hover:shadow-md ${
                               isRanked 
                                 ? 'glass-panel border-blue-200 dark:border-blue-900/50 hover:border-blue-400' 
                                 : 'bg-white/40 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700 grayscale-[40%]'
                             }`}
                           >
-                            <div className="flex items-center gap-3 overflow-hidden">
-                              <div className={`w-10 h-10 flex-shrink-0 rounded-full flex items-center justify-center font-bold text-lg shadow-inner ${
+                            <div className="flex items-center gap-2 sm:gap-3 overflow-hidden">
+                              <div className={`w-8 h-8 sm:w-9 sm:h-9 flex-shrink-0 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm shadow-inner ${
                                 isRanked 
                                   ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300' 
                                   : 'bg-slate-100 dark:bg-slate-800 text-slate-400'
                               }`}>
                                 {team.displayRank}
                               </div>
-                              <h4 className={`font-bold text-base truncate ${
+                              <h4 className={`font-bold text-xs sm:text-sm truncate ${
                                 isRanked ? 'text-slate-800 dark:text-white' : 'text-slate-500 dark:text-slate-400'
                               }`}>
                                 {team.name}
                               </h4>
                             </div>
-                            <div className={`text-2xl font-black tabular-nums tracking-tighter ml-4 flex-shrink-0 ${
+                            <div className={`text-lg sm:text-xl font-black tabular-nums tracking-tighter ml-2 flex-shrink-0 ${
                               isRanked ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500'
                             }`}>
                               {isRanked ? team.score.toLocaleString() : '-'}
@@ -321,7 +363,6 @@ const App = () => {
           </div>
         )}
 
-        {}
         {/* =========================================================================
             VIEW 2: ADMIN CONTROL PANEL
             ========================================================================= */}
@@ -336,6 +377,17 @@ const App = () => {
               </div>
               
               <div className="flex gap-2">
+                <button
+                  onClick={() => setIsCelebrating(!isCelebrating)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                    isCelebrating 
+                      ? 'bg-amber-500 hover:bg-amber-600 text-white shadow-md animate-pulse'
+                      : 'bg-indigo-100 text-indigo-600 hover:bg-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-900/50'
+                  }`}
+                >
+                  <PartyPopper className="w-4 h-4" />
+                  {isCelebrating ? 'หยุดพลุฉลอง' : 'เปิดพลุฉลอง'}
+                </button>
                 <button
                   onClick={() => setShowResetModal(true)}
                   className="flex items-center gap-2 px-4 py-2 bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 rounded-lg transition-colors"
@@ -466,7 +518,6 @@ const App = () => {
         )}
       </main>
 
-      {}
       {/* =========================================================================
           MODALS & OVERLAYS
           ========================================================================= */}
