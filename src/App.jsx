@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Trophy, Medal, Settings, UserPlus, Trash2, Edit2, 
-  RefreshCcw, Moon, Sun, Plus, Minus, ArrowLeft, ChevronUp, ChevronDown
+  RefreshCcw, Moon, Sun, ArrowLeft
 } from 'lucide-react';
 
 const App = () => {
@@ -12,12 +12,13 @@ const App = () => {
     if (saved) {
       return JSON.parse(saved);
     }
-    // ข้อมูลเริ่มต้นตัวอย่าง (ถ้าไม่มีข้อมูลใน localStorage)
+    // ข้อมูลเริ่มต้นตัวอย่าง
     return [
-      { id: '1', name: 'ประวัติศาสตร์ยุคต้น', score: 120 },
-      { id: '2', name: 'สยามประเทศ', score: 150 },
-      { id: '3', name: 'นักปราชญ์ล้านนา', score: 95 },
-      { id: '4', name: 'อยุธยารุ่งเรือง', score: 110 }
+      { id: '1', name: 'ประวัติศาสตร์ยุคต้น', score: 0 },
+      { id: '2', name: 'สยามประเทศ', score: 0 },
+      { id: '3', name: 'นักปราชญ์ล้านนา', score: 0 },
+      { id: '4', name: 'อยุธยารุ่งเรือง', score: 0 },
+      { id: '5', name: 'รัตนโกสินทร์ศก', score: 0 }
     ];
   });
 
@@ -42,11 +43,9 @@ const App = () => {
   // ซิงค์ข้อมูลข้ามหน้าต่าง (สำหรับกรณีเปิดโหมด Admin จอโน้ตบุ๊ก และเปิด Leaderboard จอโปรเจกเตอร์)
   useEffect(() => {
     const syncAcrossWindows = (e) => {
-      // ถ้ามีการเปลี่ยนคะแนนจากหน้าต่างอื่น ให้ดึงข้อมูลใหม่มาแสดงทันที
       if (e.key === 'bmpn_teams' && e.newValue) {
         setTeams(JSON.parse(e.newValue));
       }
-      // ถ้ามีการกดสลับโหมดมืด/สว่าง จากหน้าต่างอื่น ให้เปลี่ยนตามด้วย
       if (e.key === 'bmpn_theme') {
         setDarkMode(e.newValue === 'dark');
       }
@@ -68,10 +67,14 @@ const App = () => {
   }, [darkMode]);
 
   // === Helper Functions ===
-  // เรียงลำดับคะแนนจากมากไปน้อย
-  const sortedTeams = [...teams].sort((a, b) => b.score - a.score);
+  // เรียงลำดับคะแนนจากมากไปน้อย (ถ้าคะแนนเท่ากัน ให้เรียงตามตัวอักษรชื่อทีม ก-ฮ)
+  const sortedTeams = [...teams].sort((a, b) => {
+    if (b.score === a.score) {
+      return a.name.localeCompare(b.name, 'th'); // เรียงตามภาษาไทย
+    }
+    return b.score - a.score;
+  });
 
-  // เพิ่มทีมใหม่
   const handleAddTeam = (e) => {
     e.preventDefault();
     if (!newTeamName.trim()) return;
@@ -84,20 +87,17 @@ const App = () => {
     setNewTeamName('');
   };
 
-  // ลบทีม
   const handleDeleteTeam = (id) => {
     if (window.confirm('คุณแน่ใจหรือไม่ที่จะลบทีมนี้?')) {
       setTeams(teams.filter(t => t.id !== id));
     }
   };
 
-  // เริ่มต้นแก้ไขชื่อทีม
   const startEditing = (team) => {
     setEditingTeam(team.id);
     setEditName(team.name);
   };
 
-  // บันทึกการแก้ไขชื่อทีม
   const saveEditing = () => {
     if (!editName.trim()) {
       setEditingTeam(null);
@@ -107,27 +107,23 @@ const App = () => {
     setEditingTeam(null);
   };
 
-  // อัปเดตคะแนน (บวก/ลบ)
   const updateScore = (id, amount) => {
     setTeams(teams.map(t => {
       if (t.id === id) {
+        // ป้องกันคะแนนติดลบ (ถ้าไม่ต้องการให้ลบเกิน 0 สามารถใส่เงื่อนไข Math.max(0, t.score + amount) ได้)
         return { ...t, score: t.score + amount };
       }
       return t;
     }));
   };
 
-  // รีเซ็ตคะแนนทั้งหมด
   const confirmReset = () => {
     setTeams(teams.map(t => ({ ...t, score: 0 })));
     setShowResetModal(false);
   };
 
-  // === สไตล์ CSS เพิ่มเติมสำหรับแอนิเมชันและหน้าพิมพ์ ===
+  // === สไตล์ CSS เพิ่มเติม ===
   const customStyles = `
-    .flip-list-move {
-      transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    }
     .glass-panel {
       background: rgba(255, 255, 255, 0.6);
       backdrop-filter: blur(12px);
@@ -137,6 +133,13 @@ const App = () => {
     .dark .glass-panel {
       background: rgba(30, 41, 59, 0.7);
       border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in-up {
+      animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
   `;
 
@@ -177,8 +180,9 @@ const App = () => {
       </nav>
 
       {/* --- Main Content Area --- */}
-      <main className="container mx-auto px-4 py-8 max-w-5xl">
+      <main className="container mx-auto px-4 py-8 max-w-6xl">
         
+        {}
         {/* =========================================================================
             VIEW 1: PUBLIC LEADERBOARD (เมื่อไม่ได้อยู่ในโหมด Admin)
             ========================================================================= */}
@@ -193,80 +197,131 @@ const App = () => {
               </p>
             </div>
 
-            {/* โครงสร้าง List ที่รองรับ Animation การสลับตำแหน่ง */}
-            <div className="relative flex flex-col gap-4">
-              {sortedTeams.length === 0 ? (
-                <div className="text-center py-10 glass-panel rounded-xl">
-                  <p className="text-slate-500">ยังไม่มีทีมในระบบ</p>
-                </div>
-              ) : (
-                sortedTeams.map((team, index) => {
-                  // กำหนดสไตล์เริ่มต้นเป็นแบบธรรมดา
-                  let rankStyle = "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400";
-                  let icon = null;
+            {(() => {
+              if (teams.length === 0) {
+                return (
+                  <div className="text-center py-10 glass-panel rounded-xl">
+                    <p className="text-slate-500">ยังไม่มีทีมในระบบ</p>
+                  </div>
+                );
+              }
+
+              // ประมวลผลอันดับ (แบบแข่งขันสากล: ถ้าคะแนนเท่ากัน ได้อันดับเดียวกัน และข้ามอันดับถัดไป)
+              const teamsWithRank = sortedTeams.map((team, index, arr) => {
+                if (team.score === 0) return { ...team, displayRank: '-' };
+                
+                // หาระยะของทีมแรกที่ได้คะแนนเท่ากับทีมนี้ แล้ว + 1
+                const actualRank = arr.findIndex(t => t.score === team.score) + 1;
+                return { ...team, displayRank: actualRank };
+              });
+
+              const rankedTeams = teamsWithRank.filter(t => t.score > 0);
+              const unrankedTeams = teamsWithRank.filter(t => t.score === 0);
+
+              const rank1 = rankedTeams[0];
+              const rank2 = rankedTeams[1];
+              const rank3 = rankedTeams[2];
+
+              // ทีมที่เหลือจับไปรวมไว้ใน Grid ด้านล่าง
+              const bottomTeams = [...rankedTeams.slice(3), ...unrankedTeams];
+
+              return (
+                <div className="flex flex-col gap-8 w-full">
                   
-                  // จะเน้นสีสันและมอบไอคอนอันดับ ก็ต่อเมื่อทีมนั้นมีคะแนนมากกว่า 0 แล้วเท่านั้น
-                  if (team.score > 0) {
-                    if (index === 0) {
-                      rankStyle = "bg-gradient-to-r from-yellow-100 to-amber-50 dark:from-yellow-900/40 dark:to-amber-900/20 border-yellow-300 shadow-lg shadow-yellow-500/20 scale-[1.02] z-30";
-                      icon = <Trophy className="w-8 h-8 text-yellow-500" />;
-                    } else if (index === 1) {
-                      rankStyle = "bg-gradient-to-r from-slate-200 to-gray-100 dark:from-slate-700 dark:to-gray-800 border-slate-400 shadow-lg shadow-slate-500/30 scale-[1.01] z-20";
-                      icon = <Medal className="w-8 h-8 text-slate-600 dark:text-slate-300 drop-shadow-sm" />;
-                    } else if (index === 2) {
-                      rankStyle = "bg-gradient-to-r from-orange-100 to-amber-50 dark:from-amber-900/30 dark:to-orange-900/20 border-amber-300 shadow-md z-10";
-                      icon = <Medal className="w-8 h-8 text-amber-600" />;
-                    }
-                  }
-
-                  // ถ้าคะแนนเป็น 0 ให้แสดงเครื่องหมาย - แทนตัวเลข เพื่อแสดงว่าเพิ่งเริ่มต้นและยังไม่จัดอันดับ
-                  const rankDisplay = team.score === 0 ? "-" : `#${index + 1}`;
-
-                  return (
-                    <div 
-                      key={team.id} 
-                      className={`relative flex items-center justify-between p-4 md:p-6 rounded-2xl border transition-all duration-500 transform ${rankStyle}`}
-                      style={{
-                         order: index
-                      }}
-                    >
-                      <div className="flex items-center gap-4 md:gap-6">
-                        {/* เลขอันดับ / ไอคอน */}
-                        <div className="flex items-center justify-center w-12 h-12 md:w-16 md:h-16 rounded-full glass-panel font-bold text-xl md:text-2xl shadow-inner">
-                          {icon ? icon : rankDisplay}
+                  {/* --- แท่นรางวัล (Podium) สำหรับ Top 3 --- */}
+                  {rank1 && (
+                    <div className="flex flex-row justify-center items-end gap-2 sm:gap-6 mt-8 mb-4 h-[340px] sm:h-[400px] px-2 w-full max-w-4xl mx-auto">
+                      
+                      {/* แท่นอันดับ 2 (ซ้าย) */}
+                      {rank2 ? (
+                        <div className="flex flex-col items-center w-28 sm:w-48 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+                          <div className="flex flex-col items-center mb-2 bg-gradient-to-r from-slate-200 to-gray-100 dark:from-slate-700 dark:to-gray-800 p-2 sm:p-4 rounded-2xl shadow-xl border border-slate-300 dark:border-slate-500 w-full relative z-10 text-center transition-transform hover:-translate-y-1">
+                            <Medal className="w-8 h-8 sm:w-12 sm:h-12 text-slate-500 dark:text-slate-300 mb-1 drop-shadow-md" />
+                            <span className="font-bold text-xs sm:text-base truncate w-full text-slate-800 dark:text-white">{rank2.name}</span>
+                            <span className="text-lg sm:text-3xl font-black text-slate-700 dark:text-slate-200 tracking-tighter">{rank2.score.toLocaleString()}</span>
+                          </div>
+                          <div className="w-full h-32 sm:h-48 bg-gradient-to-t from-slate-300 to-slate-100 dark:from-slate-700 dark:to-slate-500 rounded-t-xl shadow-inner flex justify-center pt-4 sm:pt-6 border-t-4 border-slate-400 relative">
+                            <span className="text-5xl sm:text-7xl font-black text-slate-400/50 dark:text-slate-900/30">2</span>
+                          </div>
                         </div>
-                        
-                        {/* ชื่อทีม */}
-                        <div>
-                          <h3 className={`text-lg md:text-2xl font-bold ${(index < 3 && team.score > 0) ? 'text-slate-800 dark:text-white' : ''}`}>
-                            {team.name}
-                          </h3>
-                        </div>
+                      ) : <div className="w-28 sm:w-48"></div>}
+
+                      {/* แท่นอันดับ 1 (ตรงกลาง) */}
+                      <div className="flex flex-col items-center w-36 sm:w-60 animate-fade-in-up z-20">
+                          <div className="flex flex-col items-center mb-2 bg-gradient-to-br from-yellow-100 to-amber-50 dark:from-yellow-900/60 dark:to-amber-900/30 p-3 sm:p-5 rounded-2xl shadow-2xl border-2 border-yellow-400 dark:border-yellow-500 w-full relative text-center transition-transform hover:-translate-y-2 scale-105">
+                            <Trophy className="w-10 h-10 sm:w-16 sm:h-16 text-yellow-500 mb-1 drop-shadow-lg" />
+                            <span className="font-extrabold text-sm sm:text-xl truncate w-full text-slate-800 dark:text-white">{rank1.name}</span>
+                            <span className="text-2xl sm:text-4xl font-black text-yellow-600 dark:text-yellow-400 tracking-tighter">{rank1.score.toLocaleString()}</span>
+                          </div>
+                          <div className="w-full h-44 sm:h-64 bg-gradient-to-t from-yellow-500 to-yellow-300 dark:from-yellow-700 dark:to-yellow-500 rounded-t-xl shadow-[0_-10px_40px_rgba(234,179,8,0.3)] flex justify-center pt-6 sm:pt-8 border-t-4 border-yellow-200 relative">
+                            <div className="absolute inset-0 bg-white/20 dark:bg-black/10 rounded-t-xl pointer-events-none"></div>
+                            <span className="text-6xl sm:text-8xl font-black text-yellow-700/40 dark:text-yellow-900/40 relative z-10">1</span>
+                          </div>
                       </div>
 
-                      {/* คะแนน */}
-                      <div className="text-right">
-                        <div className={`text-3xl md:text-5xl font-black tabular-nums tracking-tighter ${
-                          team.score === 0 ? 'text-slate-400 dark:text-slate-500' :
-                          index === 0 ? 'text-yellow-600 dark:text-yellow-400' : 
-                          index === 1 ? 'text-slate-700 dark:text-slate-200' : 
-                          index === 2 ? 'text-amber-700 dark:text-amber-500' : 
-                          'text-blue-600 dark:text-blue-400'
-                        }`}>
-                          {team.score.toLocaleString()}
+                      {/* แท่นอันดับ 3 (ขวา) */}
+                      {rank3 ? (
+                        <div className="flex flex-col items-center w-28 sm:w-48 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+                          <div className="flex flex-col items-center mb-2 bg-white dark:bg-slate-800 p-2 sm:p-4 rounded-2xl shadow-lg border border-amber-300 dark:border-amber-900/50 w-full relative z-10 text-center transition-transform hover:-translate-y-1">
+                            <Medal className="w-8 h-8 sm:w-12 sm:h-12 text-amber-600 mb-1 drop-shadow-sm" />
+                            <span className="font-bold text-xs sm:text-base truncate w-full text-slate-700 dark:text-slate-200">{rank3.name}</span>
+                            <span className="text-lg sm:text-3xl font-black text-amber-600 dark:text-amber-500 tracking-tighter">{rank3.score.toLocaleString()}</span>
+                          </div>
+                          <div className="w-full h-24 sm:h-36 bg-gradient-to-t from-orange-300 to-amber-200 dark:from-amber-800 dark:to-orange-700 rounded-t-xl shadow-inner flex justify-center pt-3 sm:pt-5 border-t-4 border-amber-400 relative">
+                            <span className="text-5xl sm:text-7xl font-black text-amber-700/30 dark:text-amber-900/30">3</span>
+                          </div>
                         </div>
-                        <div className="text-xs md:text-sm font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 mt-1">
-                          คะแนน
-                        </div>
-                      </div>
+                      ) : <div className="w-28 sm:w-48"></div>}
+
                     </div>
-                  );
-                })
-              )}
-            </div>
+                  )}
+
+                  {/* --- ตารางรายชื่อทีมที่เหลือแบบคอลัมน์ (Grid) --- */}
+                  {bottomTeams.length > 0 && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6 max-w-6xl mx-auto w-full">
+                      {bottomTeams.map((team) => {
+                        const isRanked = team.score > 0;
+                        return (
+                          <div 
+                            key={team.id} 
+                            className={`flex items-center justify-between p-4 rounded-2xl border transition-all duration-300 hover:shadow-md ${
+                              isRanked 
+                                ? 'glass-panel border-blue-200 dark:border-blue-900/50 hover:border-blue-400' 
+                                : 'bg-white/40 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700 grayscale-[40%]'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3 overflow-hidden">
+                              <div className={`w-10 h-10 flex-shrink-0 rounded-full flex items-center justify-center font-bold text-lg shadow-inner ${
+                                isRanked 
+                                  ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300' 
+                                  : 'bg-slate-100 dark:bg-slate-800 text-slate-400'
+                              }`}>
+                                {team.displayRank}
+                              </div>
+                              <h4 className={`font-bold text-base truncate ${
+                                isRanked ? 'text-slate-800 dark:text-white' : 'text-slate-500 dark:text-slate-400'
+                              }`}>
+                                {team.name}
+                              </h4>
+                            </div>
+                            <div className={`text-2xl font-black tabular-nums tracking-tighter ml-4 flex-shrink-0 ${
+                              isRanked ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500'
+                            }`}>
+                              {isRanked ? team.score.toLocaleString() : '-'}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                </div>
+              );
+            })()}
           </div>
         )}
 
+        {}
         {/* =========================================================================
             VIEW 2: ADMIN CONTROL PANEL
             ========================================================================= */}
@@ -337,17 +392,16 @@ const App = () => {
                     <p className="text-slate-500">ยังไม่มีทีม กรุณาเพิ่มทีมทางซ้ายมือ</p>
                   </div>
                 ) : (
-                  // ไม่จัดเรียงในโหมดแอดมิน เพื่อป้องกันปุ่มกระโดดขณะกดคะแนน
                   teams.map((team, index) => (
                     <div key={team.id} className="glass-panel p-4 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
                       
                       {/* ข้อมูลทีม & แก้ไขชื่อ */}
                       <div className="flex items-center gap-3 w-full sm:w-auto flex-1">
-                        <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-sm font-bold">
+                        <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-sm font-bold flex-shrink-0">
                           {index + 1}
                         </div>
                         {editingTeam === team.id ? (
-                          <div className="flex items-center gap-2 flex-1">
+                          <div className="flex items-center gap-2 flex-1 w-full">
                             <input
                               type="text"
                               value={editName}
@@ -359,9 +413,9 @@ const App = () => {
                             />
                           </div>
                         ) : (
-                          <div className="flex items-center gap-2 flex-1">
-                            <span className="font-bold text-lg">{team.name}</span>
-                            <button onClick={() => startEditing(team)} className="text-slate-400 hover:text-blue-500 p-1">
+                          <div className="flex items-center gap-2 flex-1 w-full overflow-hidden">
+                            <span className="font-bold text-lg truncate">{team.name}</span>
+                            <button onClick={() => startEditing(team)} className="text-slate-400 hover:text-blue-500 p-1 flex-shrink-0">
                               <Edit2 className="w-4 h-4" />
                             </button>
                           </div>
@@ -371,34 +425,34 @@ const App = () => {
                       {/* ตัวควบคุมคะแนน */}
                       <div className="flex items-center gap-3 sm:gap-6 w-full sm:w-auto justify-between sm:justify-end">
                         
-                        <div className="text-2xl font-black text-blue-600 dark:text-blue-400 tabular-nums w-20 text-center">
+                        <div className="text-2xl font-black text-blue-600 dark:text-blue-400 tabular-nums w-16 text-center shrink-0">
                           {team.score}
                         </div>
 
-                        <div className="flex flex-wrap items-center justify-center gap-1 sm:gap-2">
+                        <div className="flex flex-wrap items-center justify-end gap-1 sm:gap-2">
                            {/* ปุ่มลบ */}
-                           <div className="flex flex-col gap-1 mr-2">
+                           <div className="flex flex-col gap-1 mr-1 sm:mr-2">
                              <button onClick={() => updateScore(team.id, -customPoint)} className="px-2 py-1 bg-red-100 hover:bg-red-200 text-red-700 dark:bg-red-900/30 dark:text-red-400 rounded text-xs font-bold transition-colors">
                                -{customPoint}
                              </button>
                            </div>
                            
                            {/* ปุ่มบวกแบบด่วน */}
-                           <button onClick={() => updateScore(team.id, 1)} className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-white rounded shadow-sm font-bold text-sm transition-transform active:scale-95">
+                           <button onClick={() => updateScore(team.id, 1)} className="px-2 sm:px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-white rounded shadow-sm font-bold text-sm transition-transform active:scale-95">
                              +1
                            </button>
-                           <button onClick={() => updateScore(team.id, 5)} className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-white rounded shadow-sm font-bold text-sm transition-transform active:scale-95">
+                           <button onClick={() => updateScore(team.id, 5)} className="px-2 sm:px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-white rounded shadow-sm font-bold text-sm transition-transform active:scale-95">
                              +5
                            </button>
-                           <button onClick={() => updateScore(team.id, 10)} className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-white rounded shadow-sm font-bold text-sm transition-transform active:scale-95">
+                           <button onClick={() => updateScore(team.id, 10)} className="px-2 sm:px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-white rounded shadow-sm font-bold text-sm transition-transform active:scale-95">
                              +10
                            </button>
-                           <button onClick={() => updateScore(team.id, customPoint)} className="px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded shadow-sm font-bold text-sm transition-transform active:scale-95">
+                           <button onClick={() => updateScore(team.id, customPoint)} className="px-2 sm:px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded shadow-sm font-bold text-sm transition-transform active:scale-95">
                              +{customPoint}
                            </button>
                            
                            {/* ปุ่มลบทีม */}
-                           <button onClick={() => handleDeleteTeam(team.id)} className="ml-2 p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors" title="ลบทีมนี้">
+                           <button onClick={() => handleDeleteTeam(team.id)} className="ml-1 sm:ml-2 p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors shrink-0" title="ลบทีมนี้">
                              <Trash2 className="w-5 h-5" />
                            </button>
                         </div>
@@ -412,10 +466,10 @@ const App = () => {
         )}
       </main>
 
+      {}
       {/* =========================================================================
           MODALS & OVERLAYS
           ========================================================================= */}
-      {/* Reset Confirmation Modal */}
       {showResetModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-fade-in-up">
