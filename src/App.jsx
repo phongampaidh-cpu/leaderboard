@@ -261,24 +261,33 @@ const App = () => {
       animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
-    /* แอนิเมชันเด็กนักเรียนกระโดดแบบสมจริงและน่ารักขึ้น */
-    @keyframes studentPop {
-      0% { transform: translateX(-50%) translateY(100px) scale(0.6) rotate(0deg); opacity: 0; }
-      15% { transform: translateX(-50%) translateY(-35px) scale(1.15) rotate(-6deg); opacity: 1; }
-      30% { transform: translateX(-50%) translateY(10px) scale(0.95) rotate(4deg); opacity: 1; }
-      45% { transform: translateX(-50%) translateY(-25px) scale(1.05) rotate(-3deg); opacity: 1; }
-      60% { transform: translateX(-50%) translateY(0px) scale(1) rotate(2deg); opacity: 1; }
-      75% { transform: translateX(-50%) translateY(0px) scale(1) rotate(0deg); opacity: 1; }
-      100% { transform: translateX(-50%) translateY(100px) scale(0.8); opacity: 0; }
+    /* แอนิเมชันเด็กนักเรียนโผล่จากด้านข้าง (Peeking from side) */
+    @keyframes peekLeft {
+      0% { transform: translateX(30%) rotate(0deg) scale(0.5); opacity: 0; }
+      15% { transform: translateX(-65%) rotate(-20deg) scale(1); opacity: 1; }
+      85% { transform: translateX(-65%) rotate(-20deg) scale(1); opacity: 1; }
+      100% { transform: translateX(30%) rotate(0deg) scale(0.5); opacity: 0; }
     }
-    .student-container {
-      transform: translateX(-50%) translateY(100px);
+    @keyframes peekRight {
+      0% { transform: translateX(-30%) rotate(0deg) scale(0.5); opacity: 0; }
+      15% { transform: translateX(65%) rotate(20deg) scale(1); opacity: 1; }
+      85% { transform: translateX(65%) rotate(20deg) scale(1); opacity: 1; }
+      100% { transform: translateX(-30%) rotate(0deg) scale(0.5); opacity: 0; }
+    }
+    .student-peek-left, .student-peek-right {
+      position: absolute;
       z-index: 0;
       opacity: 0;
       pointer-events: none;
     }
-    .is-animating .student-container {
-      animation: studentPop 2.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    .student-peek-left { left: 0; }
+    .student-peek-right { right: 0; }
+    
+    .is-animating .student-peek-left {
+      animation: peekLeft 2.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+    .is-animating .student-peek-right {
+      animation: peekRight 2.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
     }
   `;
 
@@ -365,9 +374,9 @@ const App = () => {
                       {rank2 ? (
                         <div className={`flex flex-col items-center w-28 sm:w-48 animate-fade-in-up relative ${animatingTeams.has(rank2.id) ? 'is-animating' : ''}`} style={{ animationDelay: '0.1s' }}>
                           
-                          {/* เด็กนักเรียนกระโดด */}
-                          <div className="student-container absolute -top-20 sm:-top-28 left-1/2">
-                            <StudentMascot className="w-20 h-20 sm:w-32 sm:h-32 drop-shadow-xl" />
+                          {/* เด็กแอบมองจากทางซ้าย */}
+                          <div className="student-peek-left top-1/4 sm:top-1/3">
+                            <StudentMascot className="w-16 h-16 sm:w-24 sm:h-24 drop-shadow-xl" />
                           </div>
 
                           <div className="flex flex-col items-center mb-2 bg-gradient-to-r from-slate-200 to-gray-100 dark:from-slate-700 dark:to-gray-800 p-2 sm:p-4 rounded-2xl shadow-xl border border-slate-300 dark:border-slate-500 w-full relative z-10 text-center transition-transform hover:-translate-y-1 scale-[1.01]">
@@ -384,9 +393,9 @@ const App = () => {
                       {/* แท่นอันดับ 1 (ตรงกลาง) */}
                       <div className={`flex flex-col items-center w-36 sm:w-60 animate-fade-in-up z-20 relative ${animatingTeams.has(rank1.id) ? 'is-animating' : ''}`}>
                           
-                          {/* เด็กนักเรียนกระโดด */}
-                          <div className="student-container absolute -top-24 sm:-top-36 left-1/2">
-                            <StudentMascot className="w-24 h-24 sm:w-40 sm:h-40 drop-shadow-2xl" />
+                          {/* เด็กแอบมองจากทางขวา */}
+                          <div className="student-peek-right top-[15%] sm:top-[20%]">
+                            <StudentMascot className="w-20 h-20 sm:w-28 sm:h-28 drop-shadow-2xl" />
                           </div>
 
                           <div className="flex flex-col items-center mb-2 bg-gradient-to-br from-yellow-100 to-amber-50 dark:from-yellow-900/60 dark:to-amber-900/30 p-3 sm:p-5 rounded-2xl shadow-2xl border-2 border-yellow-400 dark:border-yellow-500 w-full relative z-10 text-center transition-transform hover:-translate-y-2 scale-105">
@@ -404,9 +413,9 @@ const App = () => {
                       {rank3 ? (
                         <div className={`flex flex-col items-center w-28 sm:w-48 animate-fade-in-up relative ${animatingTeams.has(rank3.id) ? 'is-animating' : ''}`} style={{ animationDelay: '0.2s' }}>
                           
-                          {/* เด็กนักเรียนกระโดด */}
-                          <div className="student-container absolute -top-20 sm:-top-28 left-1/2">
-                            <StudentMascot className="w-20 h-20 sm:w-32 sm:h-32 drop-shadow-xl" />
+                          {/* เด็กแอบมองจากทางขวา */}
+                          <div className="student-peek-right top-1/4 sm:top-1/3">
+                            <StudentMascot className="w-16 h-16 sm:w-24 sm:h-24 drop-shadow-xl" />
                           </div>
 
                           <div className="flex flex-col items-center mb-2 bg-white dark:bg-slate-800 p-2 sm:p-4 rounded-2xl shadow-lg border border-amber-300 dark:border-amber-900/50 w-full relative z-10 text-center transition-transform hover:-translate-y-1">
