@@ -5,43 +5,24 @@ import {
   FileSpreadsheet, X, Minus, Plus, Printer
 } from 'lucide-react';
 
-// คอมโพเนนต์กราฟิกเด็กนักเรียน (ปรับให้มีความน่ารักสมจริง และใส่ชุดนักเรียน)
+// คอมโพเนนต์กราฟิกเด็กนักเรียน (ใส่ชุดนักเรียน)
 const StudentMascot = ({ className }) => (
   <svg className={className} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
     <g transform="translate(0, 5)">
-      {/* Arms (Raised up for celebration) */}
       <path d="M25 55 C 15 45, 10 25, 20 15" stroke="#FDBA74" strokeWidth="7" strokeLinecap="round" />
       <path d="M75 55 C 85 45, 90 25, 80 15" stroke="#FDBA74" strokeWidth="7" strokeLinecap="round" />
-      
-      {/* Hands */}
       <circle cx="20" cy="15" r="5" fill="#FDBA74" />
       <circle cx="80" cy="15" r="5" fill="#FDBA74" />
-
-      {/* Shirt */}
       <path d="M30 45 Q 50 35 70 45 L 75 80 Q 50 90 25 80 Z" fill="#F8FAFC" stroke="#E2E8F0" strokeWidth="2" />
-      
-      {/* Shirt Collar */}
       <path d="M38 43 L 50 55 L 62 43" stroke="#CBD5E1" strokeWidth="2" fill="#F1F5F9" strokeLinejoin="round" />
-      
-      {/* Tie */}
       <path d="M47 55 L 53 55 L 55 75 L 50 82 L 45 75 Z" fill="#1D4ED8" />
-      
-      {/* Head */}
       <circle cx="50" cy="28" r="21" fill="#FDBA74" />
-      
-      {/* Hair (Neat student haircut) */}
       <path d="M26 28 C 26 -5, 74 -5, 74 28 C 74 15, 26 15, 26 28 Z" fill="#1E293B" />
       <path d="M26 25 Q 30 15 40 12" stroke="#1E293B" strokeWidth="3" strokeLinecap="round" />
-      
-      {/* Eyes (Sparkly happy eyes) */}
       <path d="M39 25 Q 42.5 20 46 25" stroke="#1E293B" strokeWidth="3" strokeLinecap="round" fill="none" />
       <path d="M54 25 Q 57.5 20 61 25" stroke="#1E293B" strokeWidth="3" strokeLinecap="round" fill="none" />
-      
-      {/* Mouth (Happy open mouth) */}
       <path d="M42 32 Q 50 44 58 32" fill="#EF4444" />
-      <path d="M45 32 Q 50 38 55 32" fill="#FCA5A5" /> {/* Tongue */}
-      
-      {/* Cheeks */}
+      <path d="M45 32 Q 50 38 55 32" fill="#FCA5A5" />
       <circle cx="36" cy="32" r="4.5" fill="#F87171" opacity="0.6" />
       <circle cx="64" cy="32" r="4.5" fill="#F87171" opacity="0.6" />
     </g>
@@ -72,11 +53,10 @@ const App = () => {
   const [newTeamName, setNewTeamName] = useState('');
   const [customPoint, setCustomPoint] = useState(1);
   const [showResetModal, setShowResetModal] = useState(false);
-  const [showHistoryModal, setShowHistoryModal] = useState(false); // สำหรับเปิดหน้าตารางตรวจสอบ
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [editingTeam, setEditingTeam] = useState(null);
   const [editName, setEditName] = useState('');
   
-  // ระบบเก็บประวัติคะแนน
   const [currentQuestion, setCurrentQuestion] = useState(() => {
     const saved = localStorage.getItem('bmpn_curr_q');
     return saved ? parseInt(saved, 10) : 1;
@@ -92,7 +72,6 @@ const App = () => {
   const prevTeamsRef = useRef(teams);
 
   // === Effects ===
-  // นำเข้าไลบรารีพลุ
   useEffect(() => {
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js';
@@ -101,7 +80,6 @@ const App = () => {
     return () => document.body.removeChild(script);
   }, []);
 
-  // จัดการการแสดงผลพลุ
   useEffect(() => {
     let interval;
     if (isCelebrating) {
@@ -124,14 +102,12 @@ const App = () => {
     return () => clearInterval(interval);
   }, [isCelebrating]);
 
-  // บันทึกข้อมูลต่างๆ ลง localStorage
   useEffect(() => {
     localStorage.setItem('bmpn_teams', JSON.stringify(teams));
     localStorage.setItem('bmpn_score_logs', JSON.stringify(scoreLogs));
     localStorage.setItem('bmpn_curr_q', currentQuestion.toString());
   }, [teams, scoreLogs, currentQuestion]);
 
-  // ซิงค์ข้อมูลข้ามหน้าต่าง (Real-time updates)
   useEffect(() => {
     const syncAcrossWindows = (e) => {
       if (e.key === 'bmpn_teams' && e.newValue) setTeams(JSON.parse(e.newValue));
@@ -144,7 +120,6 @@ const App = () => {
     return () => window.removeEventListener('storage', syncAcrossWindows);
   }, []);
 
-  // Effect สำหรับเล่นแอนิเมชันเด็กนักเรียนแอบมอง (Peeking) เฉพาะ Top 3
   useEffect(() => {
     if (isAdmin) return;
     const prevTeams = prevTeamsRef.current;
@@ -173,7 +148,6 @@ const App = () => {
     prevTeamsRef.current = teams;
   }, [teams, isAdmin]);
 
-  // จัดการโหมดมืด/สว่าง
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add('dark');
@@ -216,8 +190,6 @@ const App = () => {
 
   const updateScore = (id, amount) => {
     let actualAmount = 0;
-    
-    // คำนวณคะแนนและบันทึกลง Log เพื่อการตรวจสอบ
     const newTeams = teams.map(t => {
       if (t.id === id) {
         const newScore = Math.max(0, t.score + amount);
@@ -229,7 +201,6 @@ const App = () => {
 
     setTeams(newTeams);
 
-    // บันทึกลง Log เฉพาะเมื่อมีการเปลี่ยนแปลงคะแนนจริงๆ
     if (actualAmount !== 0) {
       setScoreLogs(prev => [...prev, {
         id: Date.now().toString(),
@@ -243,75 +214,53 @@ const App = () => {
 
   const confirmReset = () => {
     setTeams(teams.map(t => ({ ...t, score: 0 })));
-    setScoreLogs([]); // ล้างประวัติทั้งหมด
-    setCurrentQuestion(1); // กลับไปข้อ 1 ใหม่
+    setScoreLogs([]);
+    setCurrentQuestion(1);
     setIsCelebrating(false);
     setShowResetModal(false);
   };
 
-  // พิมพ์หน้าตาราง
   const handlePrint = () => {
     window.print();
   };
 
   // === สไตล์ CSS เพิ่มเติม ===
   const customStyles = `
-    .flip-list-move {
-      transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .glass-panel {
-      background: rgba(255, 255, 255, 0.6);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-    }
-    .dark .glass-panel {
-      background: rgba(30, 41, 59, 0.7);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(30px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .animate-fade-in-up {
-      animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
-    @keyframes peekLeft {
-      0% { transform: translateX(30%) rotate(0deg) scale(0.5); opacity: 0; }
-      15% { transform: translateX(-65%) rotate(-20deg) scale(1); opacity: 1; }
-      85% { transform: translateX(-65%) rotate(-20deg) scale(1); opacity: 1; }
-      100% { transform: translateX(30%) rotate(0deg) scale(0.5); opacity: 0; }
-    }
-    @keyframes peekRight {
-      0% { transform: translateX(-30%) rotate(0deg) scale(0.5); opacity: 0; }
-      15% { transform: translateX(65%) rotate(20deg) scale(1); opacity: 1; }
-      85% { transform: translateX(65%) rotate(20deg) scale(1); opacity: 1; }
-      100% { transform: translateX(-30%) rotate(0deg) scale(0.5); opacity: 0; }
-    }
-    .student-peek-left, .student-peek-right {
-      position: absolute;
-      z-index: 0;
-      opacity: 0;
-      pointer-events: none;
-    }
+    .flip-list-move { transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+    .glass-panel { background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.3); }
+    .dark .glass-panel { background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-fade-in-up { animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    @keyframes peekLeft { 0% { transform: translateX(30%) rotate(0deg) scale(0.5); opacity: 0; } 15% { transform: translateX(-65%) rotate(-20deg) scale(1); opacity: 1; } 85% { transform: translateX(-65%) rotate(-20deg) scale(1); opacity: 1; } 100% { transform: translateX(30%) rotate(0deg) scale(0.5); opacity: 0; } }
+    @keyframes peekRight { 0% { transform: translateX(-30%) rotate(0deg) scale(0.5); opacity: 0; } 15% { transform: translateX(65%) rotate(20deg) scale(1); opacity: 1; } 85% { transform: translateX(65%) rotate(20deg) scale(1); opacity: 1; } 100% { transform: translateX(-30%) rotate(0deg) scale(0.5); opacity: 0; } }
+    .student-peek-left, .student-peek-right { position: absolute; z-index: 0; opacity: 0; pointer-events: none; }
     .student-peek-left { left: 0; }
     .student-peek-right { right: 0; }
-    
-    .is-animating .student-peek-left {
-      animation: peekLeft 2.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-    }
-    .is-animating .student-peek-right {
-      animation: peekRight 2.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-    }
+    .is-animating .student-peek-left { animation: peekLeft 2.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+    .is-animating .student-peek-right { animation: peekRight 2.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
 
-    /* ซ่อนส่วนที่ไม่ต้องการตอนพิมพ์ PDF (Print Mode) */
+    /* --- รูปแบบสำหรับการพิมพ์ (Print) --- */
     @media print {
+      @page {
+        size: A4 landscape; /* บังคับให้เป็นแนวนอน (Landscape) เพื่อให้รองรับตาราง 10 ทีมได้พอดี */
+        margin: 15mm;
+      }
       body * { visibility: hidden; }
       #print-area, #print-area * { visibility: visible; }
-      #print-area { position: absolute; left: 0; top: 0; width: 100%; color: black !important; }
-      .dark #print-area { color: black !important; background: white !important; }
+      #print-area { position: absolute; left: 0; top: 0; width: 100%; color: black !important; background: white !important; }
       .print-hide { display: none !important; }
-      th, td { border-color: #000 !important; }
+      
+      /* บังคับตารางให้ครอบคลุมหน้าจอ และแสดง Header ทุกหน้า */
+      table { width: 100% !important; border-collapse: collapse !important; }
+      thead { display: table-header-group !important; } /* สำคัญ: บังคับให้หัวตารางติดไปในหน้าถัดไป */
+      tfoot { display: table-footer-group !important; }
+      tr { page-break-inside: avoid !important; } /* ป้องกันตารางขาดครึ่งข้อ */
+      th, td { border: 1px solid #000 !important; color: #000 !important; padding: 6px !important; }
+      
+      /* บังคับสีให้แสดงผลในขาวดำได้ชัดเจน */
+      .print-text-emerald { color: #059669 !important; font-weight: bold; }
+      .print-text-red { color: #DC2626 !important; font-weight: bold; }
+      .print-text-black { color: #000 !important; }
     }
   `;
 
@@ -359,7 +308,6 @@ const App = () => {
             ========================================================================= */}
         {!isAdmin && (
           <div className="flex-1 flex flex-col justify-center w-full min-h-[calc(100vh-120px)]">
-
             {(() => {
               if (teams.length === 0) {
                 return (
@@ -369,7 +317,6 @@ const App = () => {
                 );
               }
 
-              // คำนวณอันดับ
               const teamsWithRank = sortedTeams.map((team, index, arr) => {
                 if (team.score === 0) return { ...team, displayRank: '-' };
                 const actualRank = arr.findIndex(t => t.score === team.score) + 1;
@@ -391,7 +338,7 @@ const App = () => {
                   {rank1 && (
                     <div className="flex flex-row justify-center items-end gap-2 sm:gap-6 mt-4 sm:mt-6 mb-6 h-[260px] sm:h-[320px] px-2 w-full max-w-4xl">
                       
-                      {/* แท่นอันดับ 2 (ซ้าย) */}
+                      {/* แท่นอันดับ 2 */}
                       {rank2 ? (
                         <div className={`flex flex-col items-center w-28 sm:w-48 animate-fade-in-up relative ${animatingTeams.has(rank2.id) ? 'is-animating' : ''}`} style={{ animationDelay: '0.1s' }}>
                           <div className="student-peek-left top-1/4 sm:top-1/3">
@@ -408,7 +355,7 @@ const App = () => {
                         </div>
                       ) : <div className="w-28 sm:w-48"></div>}
 
-                      {/* แท่นอันดับ 1 (ตรงกลาง) */}
+                      {/* แท่นอันดับ 1 */}
                       <div className={`flex flex-col items-center w-36 sm:w-60 animate-fade-in-up z-20 relative ${animatingTeams.has(rank1.id) ? 'is-animating' : ''}`}>
                           <div className="student-peek-right top-[15%] sm:top-[20%]">
                             <StudentMascot className="w-20 h-20 sm:w-28 sm:h-28 drop-shadow-2xl" />
@@ -424,7 +371,7 @@ const App = () => {
                           </div>
                       </div>
 
-                      {/* แท่นอันดับ 3 (ขวา) */}
+                      {/* แท่นอันดับ 3 */}
                       {rank3 ? (
                         <div className={`flex flex-col items-center w-28 sm:w-48 animate-fade-in-up relative ${animatingTeams.has(rank3.id) ? 'is-animating' : ''}`} style={{ animationDelay: '0.2s' }}>
                           <div className="student-peek-right top-1/4 sm:top-1/3">
@@ -444,7 +391,7 @@ const App = () => {
                     </div>
                   )}
 
-                  {/* --- ตารางรายชื่อทีมที่เหลือแบบคอลัมน์ (Grid 4 Columns) --- */}
+                  {/* --- ตารางรายชื่อทีมที่เหลือ (Grid 4 Columns) --- */}
                   {bottomTeams.length > 0 && (
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 mt-4 w-full">
                       {bottomTeams.map((team) => {
@@ -482,7 +429,6 @@ const App = () => {
                       })}
                     </div>
                   )}
-
                 </div>
               );
             })()}
@@ -505,15 +451,15 @@ const App = () => {
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => setShowHistoryModal(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50 rounded-lg font-bold transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50 rounded-lg font-bold transition-colors shadow-sm"
                 >
                   <FileSpreadsheet className="w-4 h-4" /> ตารางตรวจสอบคะแนน
                 </button>
                 <button
                   onClick={() => setIsCelebrating(!isCelebrating)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold transition-colors ${
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold transition-colors shadow-sm ${
                     isCelebrating 
-                      ? 'bg-amber-500 hover:bg-amber-600 text-white shadow-md animate-pulse'
+                      ? 'bg-amber-500 hover:bg-amber-600 text-white animate-pulse'
                       : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-900/50'
                   }`}
                 >
@@ -522,7 +468,7 @@ const App = () => {
                 </button>
                 <button
                   onClick={() => setShowResetModal(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 rounded-lg font-bold transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 rounded-lg font-bold transition-colors shadow-sm"
                 >
                   <RefreshCcw className="w-4 h-4" />
                   ล้างคะแนนทั้งหมด
@@ -532,10 +478,8 @@ const App = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               
-              {/* แผงตั้งค่าและจัดการข้อ (คอลัมน์ซ้าย) */}
+              {/* แผงตั้งค่าและจัดการข้อ */}
               <div className="glass-panel p-6 rounded-2xl shadow-sm lg:col-span-1 h-fit flex flex-col gap-8">
-                
-                {/* 1. ส่วนตั้งค่าข้อการแข่งขัน */}
                 <div>
                   <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
                     <FileSpreadsheet className="w-4 h-4" /> การแข่งขันปัจจุบัน
@@ -562,7 +506,6 @@ const App = () => {
                   </div>
                 </div>
 
-                {/* 2. ส่วนกำหนดคะแนนด่วน */}
                 <div>
                   <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
                     <Settings className="w-4 h-4" /> การตั้งค่าคะแนน
@@ -579,7 +522,6 @@ const App = () => {
                   </div>
                 </div>
 
-                {/* 3. เพิ่มทีมใหม่ */}
                 <div>
                   <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
                     <UserPlus className="w-4 h-4" /> เพิ่มทีมใหม่
@@ -601,10 +543,9 @@ const App = () => {
                     </button>
                   </form>
                 </div>
-                
               </div>
 
-              {/* รายชื่อทีมและปุ่มจัดการคะแนน (คอลัมน์ขวา) */}
+              {/* รายชื่อทีมและปุ่มจัดการคะแนน */}
               <div className="lg:col-span-2 space-y-3">
                 {teams.length === 0 ? (
                   <div className="text-center py-10 glass-panel rounded-xl">
@@ -614,7 +555,6 @@ const App = () => {
                   teams.map((team, index) => (
                     <div key={team.id} className="glass-panel p-3 sm:p-4 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm border border-slate-200 dark:border-slate-700 hover:border-blue-300 transition-colors">
                       
-                      {/* ข้อมูลทีม & แก้ไขชื่อ */}
                       <div className="flex items-center gap-3 w-full sm:w-auto flex-1">
                         <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-sm font-bold flex-shrink-0">
                           {index + 1}
@@ -641,7 +581,6 @@ const App = () => {
                         )}
                       </div>
 
-                      {/* ตัวควบคุมคะแนน */}
                       <div className="flex items-center gap-3 sm:gap-6 w-full sm:w-auto justify-between sm:justify-end">
                         
                         <div className="text-2xl font-black text-blue-600 dark:text-blue-400 tabular-nums w-16 text-center shrink-0 bg-blue-50 dark:bg-blue-900/20 py-1 rounded-lg">
@@ -717,17 +656,17 @@ const App = () => {
 
       {/* 2. Modal ตารางตรวจสอบคะแนน (Audit Log) */}
       {showHistoryModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-sm overflow-y-auto print:bg-white print:p-0 print:block">
-          <div id="print-area" className="bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-8 w-full max-w-6xl shadow-2xl relative my-auto animate-fade-in-up border border-slate-200 dark:border-slate-700 print:shadow-none print:border-none print:rounded-none">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-sm print:bg-white print:p-0 print:block">
+          <div id="print-area" className="bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-8 w-full max-w-[95vw] sm:max-w-7xl shadow-2xl relative my-auto animate-fade-in-up border border-slate-200 dark:border-slate-700 print:shadow-none print:border-none print:rounded-none">
             
             {/* ส่วนหัว Modal */}
-            <div className="flex justify-between items-start mb-6 print-hide">
-              <h3 className="text-2xl sm:text-3xl font-bold flex items-center gap-3">
-                <FileSpreadsheet className="text-emerald-500 w-8 h-8" /> ตารางตรวจสอบคะแนนรายข้อ
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 print-hide">
+              <h3 className="text-xl sm:text-2xl font-bold flex items-center gap-3">
+                <FileSpreadsheet className="text-emerald-500 w-6 h-6 sm:w-8 sm:h-8" /> ตารางตรวจสอบคะแนนรายข้อ
               </h3>
-              <div className="flex gap-2">
-                <button onClick={handlePrint} className="flex items-center gap-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded-lg font-bold transition-colors">
-                  <Printer className="w-4 h-4" /> <span className="hidden sm:inline">พิมพ์ตาราง (PDF)</span>
+              <div className="flex gap-2 w-full sm:w-auto">
+                <button onClick={handlePrint} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded-lg font-bold transition-colors">
+                  <Printer className="w-4 h-4" /> พิมพ์ตาราง (PDF)
                 </button>
                 <button onClick={() => setShowHistoryModal(false)} className="p-2 text-slate-400 hover:text-red-500 bg-slate-100 hover:bg-red-50 dark:bg-slate-800 dark:hover:bg-red-900/30 rounded-lg transition-colors">
                   <X className="w-6 h-6" />
@@ -741,14 +680,14 @@ const App = () => {
               <p>จุลมงกุฎคุณานุสรณ์ ครั้งที่ 4 ประจำปีการศึกษา 2569</p>
             </div>
 
-            {/* ตารางข้อมูล */}
-            <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700 print:border-none">
-              <table className="w-full text-sm text-left border-collapse">
-                <thead>
-                  <tr className="bg-slate-100 dark:bg-slate-800 print:bg-slate-200">
-                    <th className="p-3 border dark:border-slate-700 font-bold whitespace-nowrap text-center bg-slate-200 dark:bg-slate-700 print:bg-slate-300">ข้อที่</th>
+            {/* คอนเทนเนอร์แสดงตารางแบบมี Scrollbar และตรึงหัว/ท้าย (Sticky Header & Footer) */}
+            <div className="overflow-x-auto overflow-y-auto max-h-[60vh] rounded-xl border border-slate-200 dark:border-slate-700 print:max-h-none print:overflow-visible print:border-none shadow-inner">
+              <table className="w-full text-sm text-left border-collapse relative">
+                <thead className="sticky top-0 z-20 shadow-md">
+                  <tr>
+                    <th className="p-3 border-b-2 border-r dark:border-slate-600 font-bold whitespace-nowrap text-center bg-slate-200 dark:bg-slate-700 print:bg-slate-300">ข้อที่</th>
                     {teams.map((t, idx) => (
-                      <th key={t.id} className="p-3 border dark:border-slate-700 font-bold text-center whitespace-nowrap min-w-[100px]">
+                      <th key={t.id} className="p-3 border-b-2 border-r dark:border-slate-600 font-bold text-center whitespace-nowrap min-w-[100px] bg-slate-200 dark:bg-slate-700 print:bg-slate-300">
                         <span className="block text-xs text-slate-500 dark:text-slate-400 font-normal print:text-black">ทีม {idx + 1}</span>
                         {t.name}
                       </th>
@@ -756,21 +695,19 @@ const App = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {/* วนลูปสร้างแถวตามจำนวนข้อที่กำลังแข่งถึงปัจจุบัน */}
                   {Array.from({length: currentQuestion}, (_, i) => i + 1).map(qNum => (
                     <tr key={qNum} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                      <td className="p-3 border dark:border-slate-700 text-center font-bold bg-slate-50 dark:bg-slate-800/30 print:bg-white">{qNum}</td>
+                      <td className="p-3 border-b border-r dark:border-slate-700 text-center font-bold bg-slate-50/80 dark:bg-slate-800/80 print:bg-white">{qNum}</td>
                       {teams.map(t => {
-                        // คำนวณผลรวมคะแนนของทีม t ในข้อ qNum
                         const scoreForQ = scoreLogs
                           .filter(log => log.question === qNum && log.teamId === t.id)
                           .reduce((sum, log) => sum + log.amount, 0);
                         
                         return (
-                          <td key={t.id} className={`p-3 border dark:border-slate-700 text-center text-base ${
-                            scoreForQ > 0 ? 'text-emerald-600 font-bold print:text-black' : 
-                            scoreForQ < 0 ? 'text-red-500 font-bold print:text-black' : 
-                            'text-slate-300 dark:text-slate-600 print:text-gray-300'
+                          <td key={t.id} className={`p-3 border-b border-r dark:border-slate-700 text-center text-base ${
+                            scoreForQ > 0 ? 'text-emerald-600 font-bold print-text-emerald' : 
+                            scoreForQ < 0 ? 'text-red-500 font-bold print-text-red' : 
+                            'text-slate-300 dark:text-slate-600 print-text-black'
                           }`}>
                             {scoreForQ !== 0 ? (scoreForQ > 0 ? `+${scoreForQ}` : scoreForQ) : '-'}
                           </td>
@@ -779,11 +716,11 @@ const App = () => {
                     </tr>
                   ))}
                 </tbody>
-                <tfoot>
-                  <tr className="bg-blue-50 dark:bg-blue-900/20 font-bold print:bg-blue-100">
-                    <td className="p-3 border dark:border-slate-700 text-center font-black text-blue-800 dark:text-blue-300 print:text-black">รวม</td>
+                <tfoot className="sticky bottom-0 z-20 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+                  <tr>
+                    <td className="p-3 border-t-2 border-r dark:border-slate-600 text-center font-black bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-200 print:bg-blue-200 print:text-black">รวม</td>
                     {teams.map(t => (
-                      <td key={t.id} className="p-3 border dark:border-slate-700 text-center text-blue-700 dark:text-blue-400 text-xl font-black print:text-black">
+                      <td key={t.id} className="p-3 border-t-2 border-r dark:border-slate-600 text-center text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/80 text-xl font-black print:bg-blue-100 print:text-black">
                         {t.score}
                       </td>
                     ))}
@@ -792,9 +729,10 @@ const App = () => {
               </table>
             </div>
             
-            <p className="mt-4 text-xs text-slate-400 text-center print:text-black">
-              * ข้อมูลอัปเดตแบบเรียลไทม์จากการบันทึกของคณะกรรมการ
-            </p>
+            <div className="mt-4 flex justify-between items-center text-xs text-slate-500 dark:text-slate-400 print:text-black">
+              <p>* ข้อมูลอัปเดตแบบเรียลไทม์จากการบันทึกของคณะกรรมการ</p>
+              <p className="hidden print:block">พิมพ์เมื่อ: {new Date().toLocaleString('th-TH')}</p>
+            </div>
 
           </div>
         </div>
