@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   Trophy, Medal, Settings, UserPlus, Trash2, Edit2, 
-  RefreshCcw, Moon, Sun, ArrowLeft, PartyPopper, 
-  FileSpreadsheet, X, Minus, Plus, Printer, MonitorPlay
+  RefreshCcw, Moon, Sun, MonitorPlay, PartyPopper, 
+  FileSpreadsheet, X, Minus, Plus, Printer
 } from 'lucide-react';
 
-/* STREAMING_CHUNK:Initializing Graphic Components... */
-// คอมโพเนนต์กราฟิกเด็กนักเรียน (ใส่ชุดนักเรียน)
+// คอมโพเนนต์กราฟิกเด็กนักเรียน
 const StudentMascot = ({ className }) => (
   <svg className={className} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
     <g transform="translate(0, 5)">
@@ -31,7 +30,6 @@ const StudentMascot = ({ className }) => (
 );
 
 const App = () => {
-  /* STREAMING_CHUNK:Initializing States... */
   const [teams, setTeams] = useState(() => {
     const saved = localStorage.getItem('bmpn_teams');
     if (saved) return JSON.parse(saved);
@@ -72,7 +70,6 @@ const App = () => {
   const [animatingTeams, setAnimatingTeams] = useState(new Set());
   const prevTeamsRef = useRef(teams);
 
-  /* STREAMING_CHUNK:Setting up Effects and Syncing... */
   useEffect(() => {
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js';
@@ -158,7 +155,6 @@ const App = () => {
     }
   }, [darkMode]);
 
-  /* STREAMING_CHUNK:Defining Logic and Functions... */
   const sortedTeams = [...teams].sort((a, b) => {
     if (b.score === a.score) return a.name.localeCompare(b.name, 'th');
     return b.score - a.score;
@@ -242,7 +238,6 @@ const App = () => {
     };
   };
 
-  /* STREAMING_CHUNK:Setting up Global CSS... */
   const customStyles = `
     .glass-panel { background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.3); }
     .dark .glass-panel { background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); }
@@ -251,20 +246,20 @@ const App = () => {
     
     /* แอนิเมชันกระโดดเด้งจากด้านหลัง (Jump Behind) */
     @keyframes jumpUp {
-      0% { transform: translate(-50%, 60%); opacity: 0; }
-      15% { transform: translate(-50%, -95%) scale(1.1); opacity: 1; }
-      30% { transform: translate(-50%, -65%) scale(1); opacity: 1; }
-      45% { transform: translate(-50%, -85%) scale(1.05); opacity: 1; }
-      65% { transform: translate(-50%, -65%) scale(1); opacity: 1; }
-      85% { transform: translate(-50%, -65%); opacity: 1; }
-      100% { transform: translate(-50%, 60%); opacity: 0; }
+      0% { transform: translate(-50%, 50%); opacity: 0; }
+      15% { transform: translate(-50%, -100%) scale(1.1); opacity: 1; }
+      30% { transform: translate(-50%, -60%) scale(1); opacity: 1; }
+      45% { transform: translate(-50%, -80%) scale(1.05); opacity: 1; }
+      65% { transform: translate(-50%, -60%) scale(1); opacity: 1; }
+      85% { transform: translate(-50%, -60%); opacity: 1; }
+      100% { transform: translate(-50%, 50%); opacity: 0; }
     }
     
     .student-jump { 
       position: absolute; 
       left: 50%; 
       top: 0; 
-      transform: translate(-50%, 60%); 
+      transform: translate(-50%, 50%); 
       z-index: 0; /* ซ่อนไว้หลังป้ายคะแนน */
       opacity: 0; 
       pointer-events: none; 
@@ -297,91 +292,90 @@ const App = () => {
 
   // คอมโพเนนต์สำหรับแท่นรางวัล รองรับทั้งจอ TV และจอ Preview
   const PodiumView = ({ rank1, rank2, rank3, isPreview = false }) => (
-    <div className={`flex flex-row justify-center items-end gap-2 sm:gap-6 lg:gap-10 px-2 w-full ${
-      isPreview ? 'h-[200px] mt-2 mb-4' : 'h-[350px] sm:h-[450px] lg:h-[550px] 2xl:h-[650px] mt-8 sm:mt-12 mb-8 2xl:mb-12'
+    <div className={`flex flex-row justify-center items-end gap-2 sm:gap-4 lg:gap-8 px-2 w-full max-w-6xl mx-auto ${
+      isPreview ? 'mt-4 mb-2' : 'mt-16 lg:mt-24 2xl:mt-32 mb-8 lg:mb-12' 
     }`}>
       
       {/* แท่นอันดับ 2 */}
       {rank2 ? (
-        <div className={`flex flex-col items-center w-[30%] ${isPreview ? 'max-w-[150px]' : 'max-w-[320px] 2xl:max-w-[400px]'} animate-fade-in-up relative ${animatingTeams.has(rank2.id) ? 'is-animating' : ''}`} style={{ animationDelay: '0.1s' }}>
+        <div className={`flex flex-col items-center w-[30%] ${isPreview ? 'max-w-[120px]' : 'max-w-[300px]'} animate-fade-in-up relative ${animatingTeams.has(rank2.id) ? 'is-animating' : ''}`} style={{ animationDelay: '0.1s' }}>
           
           <div className="student-jump">
-            <StudentMascot className={isPreview ? "w-16 h-16 drop-shadow-lg" : "w-32 h-32 lg:w-48 lg:h-48 2xl:w-60 2xl:h-60 drop-shadow-xl"} />
+            <StudentMascot className={isPreview ? "w-12 h-12 drop-shadow-lg" : "w-24 h-24 lg:w-32 lg:h-32 2xl:w-40 2xl:h-40 drop-shadow-xl"} />
           </div>
 
           <div className={`flex flex-col items-center justify-center mb-2 bg-gradient-to-r from-slate-200 to-gray-100 dark:from-slate-700 dark:to-gray-800 rounded-2xl shadow-xl border border-slate-300 dark:border-slate-500 w-full relative z-10 text-center transition-transform hover:-translate-y-1 scale-[1.01] ${
-            isPreview ? 'p-2 min-h-[70px]' : 'p-4 lg:p-6 2xl:p-8 min-h-[140px] lg:min-h-[180px] 2xl:min-h-[220px]'
+            isPreview ? 'p-2 min-h-[60px]' : 'p-3 lg:p-5 min-h-[100px] lg:min-h-[140px]'
           }`}>
-            <Medal className={`${isPreview ? 'w-5 h-5 mb-1' : 'w-10 h-10 lg:w-16 lg:h-16 2xl:w-20 2xl:h-20 mb-2 lg:mb-3'} text-slate-500 dark:text-slate-300 drop-shadow-md flex-shrink-0`} />
-            <span className={`font-bold break-words line-clamp-2 w-full text-slate-800 dark:text-white leading-snug ${isPreview ? 'text-[10px]' : 'text-sm lg:text-2xl 2xl:text-3xl'}`}>{rank2.name}</span>
-            <div className="flex items-baseline gap-1 mt-1 lg:mt-2 justify-center w-full">
-              <span className={`font-black text-slate-700 dark:text-slate-200 tracking-tighter ${isPreview ? 'text-sm' : 'text-3xl lg:text-5xl 2xl:text-6xl'}`}>{rank2.score.toLocaleString()}</span>
-              <span className={`font-bold text-slate-400 dark:text-slate-500 ${isPreview ? 'text-[8px]' : 'text-xs lg:text-base 2xl:text-xl'}`}>คะแนน</span>
+            <Medal className={`${isPreview ? 'w-4 h-4 mb-0.5' : 'w-8 h-8 lg:w-12 lg:h-12 mb-1 lg:mb-2'} text-slate-500 dark:text-slate-300 drop-shadow-md flex-shrink-0`} />
+            <span className={`font-bold break-words line-clamp-2 w-full text-slate-800 dark:text-white leading-snug ${isPreview ? 'text-[9px]' : 'text-xs lg:text-lg 2xl:text-xl'}`}>{rank2.name}</span>
+            <div className="flex items-baseline gap-1 mt-1 justify-center w-full">
+              <span className={`font-black text-slate-700 dark:text-slate-200 tracking-tighter ${isPreview ? 'text-xs' : 'text-2xl lg:text-4xl 2xl:text-5xl'}`}>{rank2.score.toLocaleString()}</span>
+              <span className={`font-bold text-slate-400 dark:text-slate-500 ${isPreview ? 'text-[7px]' : 'text-[10px] lg:text-sm'}`}>คะแนน</span>
             </div>
           </div>
           <div className={`w-full bg-gradient-to-t from-slate-300 to-slate-100 dark:from-slate-700 dark:to-slate-500 rounded-t-xl shadow-inner flex justify-center pt-2 border-t-4 border-slate-400 relative z-10 ${
-            isPreview ? 'h-16' : 'h-32 sm:h-44 lg:h-56 2xl:h-72 pt-6 lg:pt-10'
+            isPreview ? 'h-12' : 'h-24 sm:h-32 lg:h-44 2xl:h-52 pt-4 lg:pt-6'
           }`}>
-            <span className={`font-black text-slate-400/50 dark:text-slate-900/30 ${isPreview ? 'text-3xl' : 'text-6xl lg:text-8xl 2xl:text-9xl'}`}>2</span>
+            <span className={`font-black text-slate-400/50 dark:text-slate-900/30 ${isPreview ? 'text-2xl' : 'text-5xl lg:text-7xl 2xl:text-8xl'}`}>2</span>
           </div>
         </div>
-      ) : <div className={`w-[30%] ${isPreview ? 'max-w-[150px]' : 'max-w-[320px] 2xl:max-w-[400px]'}`}></div>}
+      ) : <div className={`w-[30%] ${isPreview ? 'max-w-[120px]' : 'max-w-[300px]'}`}></div>}
 
       {/* แท่นอันดับ 1 */}
-      <div className={`flex flex-col items-center w-[40%] ${isPreview ? 'max-w-[200px]' : 'max-w-[420px] 2xl:max-w-[550px]'} animate-fade-in-up relative ${animatingTeams.has(rank1.id) ? 'is-animating' : ''}`}>
+      <div className={`flex flex-col items-center w-[38%] ${isPreview ? 'max-w-[150px]' : 'max-w-[400px]'} animate-fade-in-up relative ${animatingTeams.has(rank1.id) ? 'is-animating' : ''}`}>
           
           <div className="student-jump">
-            <StudentMascot className={isPreview ? "w-20 h-20 drop-shadow-xl" : "w-40 h-40 lg:w-60 lg:h-60 2xl:w-72 2xl:h-72 drop-shadow-2xl"} />
+            <StudentMascot className={isPreview ? "w-16 h-16 drop-shadow-xl" : "w-32 h-32 lg:w-40 lg:h-40 2xl:w-48 2xl:h-48 drop-shadow-2xl"} />
           </div>
 
           <div className={`flex flex-col items-center justify-center mb-2 bg-gradient-to-br from-yellow-100 to-amber-50 dark:from-yellow-900/60 dark:to-amber-900/30 rounded-2xl shadow-2xl border-2 border-yellow-400 dark:border-yellow-500 w-full relative z-10 text-center transition-transform hover:-translate-y-2 scale-105 ${
-            isPreview ? 'p-2 min-h-[80px]' : 'p-5 lg:p-8 2xl:p-10 min-h-[160px] lg:min-h-[220px] 2xl:min-h-[280px]'
+            isPreview ? 'p-2 min-h-[70px]' : 'p-4 lg:p-6 min-h-[120px] lg:min-h-[160px]'
           }`}>
-            <Trophy className={`${isPreview ? 'w-6 h-6 mb-1' : 'w-14 h-14 lg:w-24 lg:h-24 2xl:w-32 2xl:h-32 mb-2 lg:mb-4'} text-yellow-500 drop-shadow-lg flex-shrink-0`} />
-            <span className={`font-extrabold break-words line-clamp-2 w-full text-slate-800 dark:text-white leading-snug ${isPreview ? 'text-[11px]' : 'text-base lg:text-3xl 2xl:text-4xl'}`}>{rank1.name}</span>
-            <div className="flex items-baseline gap-1 sm:gap-1.5 mt-1 lg:mt-2 justify-center w-full">
-              <span className={`font-black text-yellow-600 dark:text-yellow-400 tracking-tighter ${isPreview ? 'text-base' : 'text-4xl lg:text-7xl 2xl:text-8xl'}`}>{rank1.score.toLocaleString()}</span>
-              <span className={`font-bold text-yellow-700/60 dark:text-yellow-500/80 ${isPreview ? 'text-[9px]' : 'text-sm lg:text-xl 2xl:text-2xl'}`}>คะแนน</span>
+            <Trophy className={`${isPreview ? 'w-5 h-5 mb-0.5' : 'w-10 h-10 lg:w-16 lg:h-16 mb-1 lg:mb-2'} text-yellow-500 drop-shadow-lg flex-shrink-0`} />
+            <span className={`font-extrabold break-words line-clamp-2 w-full text-slate-800 dark:text-white leading-snug ${isPreview ? 'text-[10px]' : 'text-sm lg:text-xl 2xl:text-2xl'}`}>{rank1.name}</span>
+            <div className="flex items-baseline gap-1 mt-1 justify-center w-full">
+              <span className={`font-black text-yellow-600 dark:text-yellow-400 tracking-tighter ${isPreview ? 'text-sm' : 'text-3xl lg:text-5xl 2xl:text-6xl'}`}>{rank1.score.toLocaleString()}</span>
+              <span className={`font-bold text-yellow-700/60 dark:text-yellow-500/80 ${isPreview ? 'text-[8px]' : 'text-xs lg:text-sm'}`}>คะแนน</span>
             </div>
           </div>
           <div className={`w-full bg-gradient-to-t from-yellow-500 to-yellow-300 dark:from-yellow-700 dark:to-yellow-500 rounded-t-xl shadow-[0_-10px_40px_rgba(234,179,8,0.3)] flex justify-center pt-2 border-t-4 border-yellow-200 relative z-10 ${
-            isPreview ? 'h-24' : 'h-48 sm:h-64 lg:h-80 2xl:h-96 pt-8 lg:pt-12'
+            isPreview ? 'h-16' : 'h-32 sm:h-48 lg:h-60 2xl:h-72 pt-6 lg:pt-8'
           }`}>
             <div className="absolute inset-0 bg-white/20 dark:bg-black/10 rounded-t-xl pointer-events-none"></div>
-            <span className={`font-black text-yellow-700/40 dark:text-yellow-900/40 relative z-10 ${isPreview ? 'text-4xl' : 'text-7xl lg:text-9xl 2xl:text-[10rem]'}`}>1</span>
+            <span className={`font-black text-yellow-700/40 dark:text-yellow-900/40 relative z-10 ${isPreview ? 'text-3xl' : 'text-6xl lg:text-8xl 2xl:text-9xl'}`}>1</span>
           </div>
       </div>
 
       {/* แท่นอันดับ 3 */}
       {rank3 ? (
-        <div className={`flex flex-col items-center w-[30%] ${isPreview ? 'max-w-[150px]' : 'max-w-[320px] 2xl:max-w-[400px]'} animate-fade-in-up relative ${animatingTeams.has(rank3.id) ? 'is-animating' : ''}`} style={{ animationDelay: '0.2s' }}>
+        <div className={`flex flex-col items-center w-[30%] ${isPreview ? 'max-w-[120px]' : 'max-w-[300px]'} animate-fade-in-up relative ${animatingTeams.has(rank3.id) ? 'is-animating' : ''}`} style={{ animationDelay: '0.2s' }}>
           
           <div className="student-jump">
-            <StudentMascot className={isPreview ? "w-16 h-16 drop-shadow-lg" : "w-32 h-32 lg:w-48 lg:h-48 2xl:w-60 2xl:h-60 drop-shadow-xl"} />
+            <StudentMascot className={isPreview ? "w-12 h-12 drop-shadow-lg" : "w-24 h-24 lg:w-32 lg:h-32 2xl:w-40 2xl:h-40 drop-shadow-xl"} />
           </div>
 
           <div className={`flex flex-col items-center justify-center mb-2 bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-amber-300 dark:border-amber-900/50 w-full relative z-10 text-center transition-transform hover:-translate-y-1 ${
-            isPreview ? 'p-2 min-h-[70px]' : 'p-4 lg:p-6 2xl:p-8 min-h-[140px] lg:min-h-[180px] 2xl:min-h-[220px]'
+            isPreview ? 'p-2 min-h-[60px]' : 'p-3 lg:p-5 min-h-[100px] lg:min-h-[140px]'
           }`}>
-            <Medal className={`${isPreview ? 'w-5 h-5 mb-1' : 'w-10 h-10 lg:w-16 lg:h-16 2xl:w-20 2xl:h-20 mb-2 lg:mb-3'} text-amber-600 drop-shadow-sm flex-shrink-0`} />
-            <span className={`font-bold break-words line-clamp-2 w-full text-slate-700 dark:text-slate-200 leading-snug ${isPreview ? 'text-[10px]' : 'text-sm lg:text-2xl 2xl:text-3xl'}`}>{rank3.name}</span>
-            <div className="flex items-baseline gap-1 mt-1 lg:mt-2 justify-center w-full">
-              <span className={`font-black text-amber-600 dark:text-amber-500 tracking-tighter ${isPreview ? 'text-sm' : 'text-3xl lg:text-5xl 2xl:text-6xl'}`}>{rank3.score.toLocaleString()}</span>
-              <span className={`font-bold text-amber-700/50 dark:text-amber-500/80 ${isPreview ? 'text-[8px]' : 'text-xs lg:text-base 2xl:text-xl'}`}>คะแนน</span>
+            <Medal className={`${isPreview ? 'w-4 h-4 mb-0.5' : 'w-8 h-8 lg:w-12 lg:h-12 mb-1 lg:mb-2'} text-amber-600 drop-shadow-sm flex-shrink-0`} />
+            <span className={`font-bold break-words line-clamp-2 w-full text-slate-700 dark:text-slate-200 leading-snug ${isPreview ? 'text-[9px]' : 'text-xs lg:text-lg 2xl:text-xl'}`}>{rank3.name}</span>
+            <div className="flex items-baseline gap-1 mt-1 justify-center w-full">
+              <span className={`font-black text-amber-600 dark:text-amber-500 tracking-tighter ${isPreview ? 'text-xs' : 'text-2xl lg:text-4xl 2xl:text-5xl'}`}>{rank3.score.toLocaleString()}</span>
+              <span className={`font-bold text-amber-700/50 dark:text-amber-500/80 ${isPreview ? 'text-[7px]' : 'text-[10px] lg:text-sm'}`}>คะแนน</span>
             </div>
           </div>
           <div className={`w-full bg-gradient-to-t from-orange-300 to-amber-200 dark:from-amber-800 dark:to-orange-700 rounded-t-xl shadow-inner flex justify-center pt-2 border-t-4 border-amber-400 relative z-10 ${
-            isPreview ? 'h-10' : 'h-24 sm:h-36 lg:h-44 2xl:h-56 pt-4 lg:pt-8'
+            isPreview ? 'h-8' : 'h-16 sm:h-24 lg:h-32 2xl:h-40 pt-2 lg:pt-4'
           }`}>
-            <span className={`font-black text-amber-700/30 dark:text-amber-900/30 ${isPreview ? 'text-2xl' : 'text-5xl lg:text-7xl 2xl:text-8xl'}`}>3</span>
+            <span className={`font-black text-amber-700/30 dark:text-amber-900/30 ${isPreview ? 'text-xl' : 'text-4xl lg:text-6xl 2xl:text-7xl'}`}>3</span>
           </div>
         </div>
-      ) : <div className={`w-[30%] ${isPreview ? 'max-w-[150px]' : 'max-w-[320px] 2xl:max-w-[400px]'}`}></div>}
+      ) : <div className={`w-[30%] ${isPreview ? 'max-w-[120px]' : 'max-w-[300px]'}`}></div>}
 
     </div>
   );
 
-  /* STREAMING_CHUNK:Rendering the Header and App Layout... */
   return (
     <div className={`min-h-[calc(100vh)] flex flex-col transition-colors duration-300 font-sans ${darkMode ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-800'}`}>
       <style>{customStyles}</style>
@@ -419,15 +413,14 @@ const App = () => {
       </nav>
 
       {/* --- Main Content Area --- */}
-      {/* ขยาย max-w ให้ใหญ่ขึ้นมากเพื่อรองรับจอ TV ระดับ 80-90 นิ้ว */}
       <main className={`flex-1 flex flex-col justify-center container mx-auto px-4 py-4 overflow-hidden ${isAdmin ? 'max-w-7xl' : 'max-w-[1800px] w-full'}`}>
         
-        {/* STREAMING_CHUNK:Rendering Public Live View (Audience Mode)... */}
+        {}
         {/* =========================================================================
             VIEW 1: PUBLIC LEADERBOARD (หน้าจอสำหรับผู้ชม Live View สำหรับ TV 80-90 นิ้ว)
             ========================================================================= */}
         {!isAdmin && (
-          <div className="flex-1 flex flex-col justify-center w-full min-h-[calc(100vh-120px)]">
+          <div className="flex-1 flex flex-col justify-center w-full min-h-[calc(100vh-120px)] pb-10">
             {(() => {
               if (teams.length === 0) {
                 return (
@@ -440,47 +433,47 @@ const App = () => {
               const { rank1, rank2, rank3, bottomTeams } = getRankedTeamsData();
 
               return (
-                <div className="flex flex-col items-center w-full mx-auto -mt-4 sm:-mt-8">
+                <div className="flex flex-col items-center w-full mx-auto">
                   
-                  {/* --- แท่นรางวัล (Podium) ขยายขนาด 4K --- */}
+                  {/* --- แท่นรางวัล (Podium) --- */}
                   {rank1 && <PodiumView rank1={rank1} rank2={rank2} rank3={rank3} />}
 
-                  {/* --- ตารางรายชื่อทีมที่เหลือ (ปรับคอลัมน์ให้สมดุลกับความกว้างจอ) --- */}
+                  {/* --- ตารางรายชื่อทีมที่เหลือ --- */}
                   {bottomTeams.length > 0 && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6 lg:gap-10 mt-8 w-full px-2 lg:px-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 lg:gap-8 mt-4 w-full px-2 lg:px-4 max-w-7xl mx-auto">
                       {bottomTeams.map((team) => {
                         const isRanked = team.score > 0;
                         return (
                           <div 
                             key={team.id} 
-                            className={`flex items-center justify-between p-6 lg:p-8 rounded-3xl border-2 transition-all duration-300 shadow-sm hover:shadow-xl hover:-translate-y-2 ${
+                            className={`flex items-center justify-between p-4 lg:p-6 rounded-2xl border-2 transition-all duration-300 shadow-sm hover:shadow-lg hover:-translate-y-1 ${
                               isRanked 
                                 ? 'glass-panel border-blue-200 dark:border-blue-800 bg-white/80 dark:bg-slate-800/80' 
                                 : 'bg-slate-100/50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700 grayscale-[20%]'
                             }`}
                           >
-                            <div className="flex items-center gap-4 lg:gap-6 overflow-hidden pr-4">
-                              <div className={`w-14 h-14 lg:w-20 lg:h-20 flex-shrink-0 rounded-full flex items-center justify-center font-black text-xl lg:text-3xl shadow-inner ${
+                            <div className="flex items-center gap-3 lg:gap-4 overflow-hidden pr-2">
+                              <div className={`w-10 h-10 lg:w-14 lg:h-14 flex-shrink-0 rounded-full flex items-center justify-center font-black text-lg lg:text-2xl shadow-inner ${
                                 isRanked 
                                   ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300' 
                                   : 'bg-slate-200 dark:bg-slate-700 text-slate-400'
                               }`}>
                                 {team.displayRank}
                               </div>
-                              <h4 className={`font-bold text-xl lg:text-3xl 2xl:text-4xl break-words line-clamp-2 leading-snug ${
+                              <h4 className={`font-bold text-lg lg:text-xl 2xl:text-2xl break-words line-clamp-2 leading-snug ${
                                 isRanked ? 'text-slate-800 dark:text-white' : 'text-slate-500 dark:text-slate-400'
                               }`}>
                                 {team.name}
                               </h4>
                             </div>
-                            <div className="flex items-baseline gap-1 lg:gap-2 ml-auto flex-shrink-0">
-                              <span className={`text-4xl lg:text-6xl 2xl:text-7xl font-black tabular-nums tracking-tighter ${
+                            <div className="flex items-baseline gap-1 ml-auto flex-shrink-0">
+                              <span className={`text-3xl lg:text-4xl 2xl:text-5xl font-black tabular-nums tracking-tighter ${
                                 isRanked ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500'
                               }`}>
                                 {isRanked ? team.score.toLocaleString() : '-'}
                               </span>
                               {isRanked && (
-                                <span className="font-bold text-slate-400 dark:text-slate-400 text-sm lg:text-xl 2xl:text-2xl">คะแนน</span>
+                                <span className="font-bold text-slate-400 dark:text-slate-400 text-xs lg:text-sm">คะแนน</span>
                               )}
                             </div>
                           </div>
@@ -494,7 +487,7 @@ const App = () => {
           </div>
         )}
 
-        {/* STREAMING_CHUNK:Rendering Admin Control Panel... */}
+        {}
         {/* =========================================================================
             VIEW 2: ADMIN CONTROL PANEL (พร้อม Live Preview)
             ========================================================================= */}
@@ -659,7 +652,7 @@ const App = () => {
         )}
       </main>
 
-      {/* STREAMING_CHUNK:Rendering Modals and Print Views... */}
+      {}
       {/* =========================================================================
           MODALS & OVERLAYS
           ========================================================================= */}
